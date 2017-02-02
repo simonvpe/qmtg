@@ -1,4 +1,4 @@
-#include "ecst/ecst.hpp"
+#include "ecst.hpp"
 #include <iostream>
 #include <functional>
 #include <array>
@@ -359,40 +359,40 @@ void loop() {
 
     // Create some dummy data
     ctx->step([&](auto& proxy) {
-        for(auto i = 0 ; i < 100 ; ++i) {
-            MTG::Factory::makeCreature(proxy, 1, 2);
-        }
-        MTG::Factory::makePlayer(proxy,
-            "Simon", 
-            12,
-            {
-                Black{1}, 
-                Blue{2}, 
-                Colorless{0},
-                Generic{-1},
-                Green{2},
-                Red{2},
-                White{5}
-            },
-            55);
+        // for(auto i = 0 ; i < 100 ; ++i) {
+        //     MTG::Factory::makeCreature(proxy, 1, 2);
+        // }
+        // MTG::Factory::makePlayer(proxy,
+        //     "Simon", 
+        //     12,
+        //     {
+        //         Black{1}, 
+        //         Blue{2}, 
+        //         Colorless{0},
+        //         Generic{-1},
+        //         Green{2},
+        //         Red{2},
+        //         White{5}
+        //     },
+        //     55);
     });
 
-    while(true) {
-        ctx->step([](auto& proxy) {
-            proxy.execute_systems_from(MTG::SystemTag::ToughnessPrinter)(
-                sea::t(MTG::SystemTag::ToughnessPrinter)
-                .for_subtasks([](auto& s, auto& data) {
-                    s.process(data);
-                })
-            );
-            proxy.execute_systems_from(MTG::SystemTag::PlayerPrinter)(
-                sea::t(MTG::SystemTag::PlayerPrinter)
-                .for_subtasks([](auto& s, auto& data) {
-                    s.process(data);
-                })
-            );
-        });
-    }
+    // while(true) {
+    //     ctx->step([](auto& proxy) {
+    //         proxy.execute_systems_from(MTG::SystemTag::ToughnessPrinter)(
+    //             sea::t(MTG::SystemTag::ToughnessPrinter)
+    //             .for_subtasks([](auto& s, auto& data) {
+    //                 s.process(data);
+    //             })
+    //         );
+    //         proxy.execute_systems_from(MTG::SystemTag::PlayerPrinter)(
+    //             sea::t(MTG::SystemTag::PlayerPrinter)
+    //             .for_subtasks([](auto& s, auto& data) {
+    //                 s.process(data);
+    //             })
+    //         );
+    //     });
+    // }
 }
 
 } // namespace MTG
