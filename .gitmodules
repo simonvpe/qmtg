@@ -1,0 +1,3 @@
+[submodule "ecst"]
+	path = ecst
+	url = https://github.com/SuperV1234/ecst.git
