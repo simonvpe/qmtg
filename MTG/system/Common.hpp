@@ -1,3 +1,3 @@
 #pragma once
 
-#define SYSTEM(x) class x : entityx::System<x>
+#define SYSTEM(x) class x : public entityx::System<x>
