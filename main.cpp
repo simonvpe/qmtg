@@ -1,10 +1,25 @@
-#include "entityx.h"
+#include "entityx/entityx.h"
+
+#include "SFML/Window.hpp"
+
 #include "MTG/cards/cards.hpp"
 #include "MTG/system/system.hpp"
 
 #include <iostream>
 
 int main() {
+
+    sf::Window window(sf::VideoMode(800,600), "Magic The Gathering");
+
+    while(window.isOpen()) {
+        sf::Event evt;
+        while(window.pollEvent(evt)) {
+            if(evt.type == sf::Event::Closed) {
+                window.close();
+            }
+        }
+    }
+    
     using namespace MTG;
     using namespace entityx;
     using MTG::Component::CreatureComponent;
