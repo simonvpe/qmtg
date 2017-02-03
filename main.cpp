@@ -8,6 +8,10 @@
 #include <iostream>
 
 int main() {
+    using namespace MTG::cards;
+    using namespace entityx;
+    using MTG::Component::CreatureComponent;
+    using MTG::Component::EnchantCreatureComponent;
 
     sf::Window window(sf::VideoMode(800,600), "Magic The Gathering");
 
@@ -20,14 +24,10 @@ int main() {
         }
     }
     
-    using namespace MTG;
-    using namespace entityx;
-    using MTG::Component::CreatureComponent;
-    using MTG::Component::EnchantCreatureComponent;
     
     EntityX ex;
 
-    auto e = MTG::cards::makeAeronautAdmiral(ex);
+    auto e = makeAeronautAdmiral(ex);
     
     ex.entities.each<CreatureComponent>([](auto e, auto& creature) {
             std::cout << "T: " << (int)creature.toughness << '\n';
