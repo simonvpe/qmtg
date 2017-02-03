@@ -1,24 +1,25 @@
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include <QQmlContext>
-
-#include "mtg/mtg.hpp"
-
-#include <thread>
+#include "entityx.h"
+#include "MTG/cards/cards.hpp"
+#include "MTG/system/system.hpp"
 
 #include <iostream>
-int main(int argc, char *argv[])
-{
 
-    std::thread mtgEngine(MTG::loop);
+int main() {
+    using namespace MTG;
+    using namespace entityx;
+    using MTG::Component::CreatureComponent;
+    using MTG::Component::EnchantCreatureComponent;
+    
+    EntityX ex;
 
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QGuiApplication app(argc, argv);
-
-    QQmlApplicationEngine engine;
-    engine.load(QUrl("file:///C:/Users/simonp/Documents/qmtg/main.qml"));
-
-    auto res = app.exec();
-    mtgEngine.join();
-    return res;
+    auto e = MTG::cards::makeAeronautAdmiral(ex);
+    
+    ex.entities.each<CreatureComponent>([](auto e, auto& creature) {
+            std::cout << "T: " << (int)creature.toughness << '\n';
+    });
+    
+    e.destroy();
+    
+    
+    std::cout << "EntityX " << sizeof(e) << '\n';    
 }

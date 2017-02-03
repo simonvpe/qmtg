@@ -1,3 +1,6 @@
-[submodule "ecst"]
-	path = ecst
-	url = https://github.com/SuperV1234/ecst.git
+[submodule "entityx"]
+	path = entityx
+	url = https://github.com/alecthomas/entityx.git
+[submodule "SFML"]
+	path = SFML
+	url = https://github.com/SFML/SFML.git
