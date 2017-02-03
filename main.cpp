@@ -4,6 +4,7 @@
 #include "MTG/system/system.hpp"
 #include "tinyfsm.hpp"
 #include <iostream>
+#include <deque>
 
 /*******************************************************************************
  * FSM
@@ -47,6 +48,10 @@ namespace GUI {
 struct MouseClickEvent {
     struct Position { int x,y; } position;
 };
+
+struct EntityActivationEvent {
+    entityx::Entity entity;
+};
     
 /*******************************************************************************
  * GUI Components
@@ -54,10 +59,6 @@ struct MouseClickEvent {
 struct SpriteComponent {
     struct Position { int x,y,z; } position;
     struct Size     { int w,h;   } size;
-};
-
-struct MouseClickComponent {
-    bool clicked;
 };
 
 /*******************************************************************************
@@ -127,7 +128,8 @@ private:
     RenderWindow& m_window;
     bool          m_requiresUpdate;
 };
-    
+
+// - Emits SpriteClickEvent's
 class MouseClickSystem
     : public System<MouseClickSystem>
     , public Receiver<MouseClickSystem> {
@@ -137,12 +139,27 @@ public:
     }
     
     void update(EntityManager &enm, EventManager &evm, TimeDelta dt) {
+        while(!m_clicks.empty()) {
+            auto evt = m_clicks.front();
+
+            // Fire an EntityActivationEvent for the entity that was
+            // clicked
+            enm.each<SpriteComponent>([&](auto e, auto& sprite) {
+                    sf::Rect<int> r(sprite.position.x, sprite.position.y,
+                                    sprite.size.w, sprite.size.h);
+                    if(r.contains(evt.position.x, evt.position.y)) {
+                        evm.emit<EntityActivationEvent>({e});
+                    }
+            });
+            m_clicks.pop_front();
+        }
     }
 
     void receive(const MouseClickEvent &evt) {
-        std::cout << "Mouse click event received ("
-                  << evt.position.x << "," << evt.position.y << ")!\n";
+        m_clicks.push_back(evt);
     }
+private:
+    std::deque<MouseClickEvent> m_clicks;
 };
 } // namespace GUI
 } // namespace MTG
@@ -153,6 +170,7 @@ int main() {
     using MTG::GameFsm;
     using MTG::Component::CreatureComponent;
     using MTG::Component::EnchantCreatureComponent;
+    using MTG::Component::ZoneComponent;
     using MTG::GUI::MouseClickEvent;
     using MTG::GUI::MouseClickSystem;
     using MTG::GUI::RenderSystem;
@@ -166,11 +184,15 @@ int main() {
     ex.systems.configure();
 
     auto e = makeAeronautAdmiral(ex);
+    
     auto sprite = e.assign<MTG::GUI::SpriteComponent>();
     sprite->position.x = 0;
     sprite->position.y = 0;
     sprite->size.w = 100;
     sprite->size.h = 100;
+    
+    auto zone = e.assign<ZoneComponent>();
+    zone->zone = MTG::Constants::Zone::HAND;
     
     while(window.isOpen()) {
         sf::Event evt;

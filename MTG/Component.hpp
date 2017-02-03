@@ -33,6 +33,10 @@ struct EvasionAbilityComponent {
 struct CreaturesYouControlHaveEvasion {
     Constants::EvasionAbility evasion;
 };
+
+struct ZoneComponent {
+    Constants::Zone       zone;
+};
     
 } // namespace Component
 } // namespace MTG
