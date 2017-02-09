@@ -2,44 +2,54 @@
 #include "SFML/Graphics.hpp"
 #include "MTG/cards/cards.hpp"
 #include "MTG/system/system.hpp"
-#include "tinyfsm.hpp"
 #include <iostream>
 #include <deque>
+#include <cmath>
+
+namespace ex = entityx;
 
 /*******************************************************************************
  * FSM
  ******************************************************************************/
 namespace MTG {
-using tinyfsm::Fsm;
-using entityx::EntityX;
+using Constants::TableState;
     
-struct Event : tinyfsm::Event {
-    Event(EntityX &e) : ex(e) {}
-    EntityX &ex;
+struct EntityActivationEvent {
+    EntityActivationEvent(ex::Entity& e) : entity(e) {}
+    ex::Entity entity;
 };
+
+template<typename EventType>    
+TableState action(TableState, EventType);
+
+template<>    
+TableState action(TableState state, EntityActivationEvent evt) {
+    return TableState::READY_TO_START;
+}
+
+// Receives events from entityx and dispatches to
+// game FSM. These events must be tinyfsm::Event's
+class GameFsm : public ex::Receiver<GameFsm> {
+public:
+
+    GameFsm(ex::EntityManager& em, ex::EventManager& evm)
+        : m_entities{em}
+        , m_events{evm}
+        , m_tableState{TableState::WAITING} {
+        evm.subscribe<EntityActivationEvent>(*this);
+    }
     
-struct GameFsm : public Fsm<GameFsm> {
-    // Unhandled events
-    virtual void react(const Event &) {
-        std::cout << "Unhandled event received!\n";
+    template<typename T>
+    void receive(const T& evt) {
+        m_tableState = action(m_tableState, evt);
+        std::cout << "TableState is now " << (int)m_tableState << std::endl;
     }
-
-    virtual void entry() {
-        std::cout << "Entry GameFsm\n";
-    }
-
-    virtual void exit() {
-        std::cout << "Exit GameFsm\n";
-    }
+    
+private:
+    ex::EntityManager&    m_entities;
+    ex::EventManager&     m_events;
+    TableState            m_tableState;
 };
-
-struct Initial : public GameFsm {
-    virtual void react(const Event &evt) {
-        std::cout << "Event received S0!\n";
-    }
-};
-
-FSM_INITIAL_STATE(MTG::GameFsm, MTG::Initial);
 
 namespace GUI {
 /*******************************************************************************
@@ -48,36 +58,35 @@ namespace GUI {
 struct MouseClickEvent {
     struct Position { int x,y; } position;
 };
-
-struct EntityActivationEvent {
-    entityx::Entity entity;
-};
     
 /*******************************************************************************
  * GUI Components
  ******************************************************************************/
 struct SpriteComponent {
-    struct Position { int x,y,z; } position;
-    struct Size     { int w,h;   } size;
+    SpriteComponent(const char* img) {
+        texture.loadFromFile(img);
+        sprite.setTexture(texture);
+    }
+    sf::Texture texture;
+    sf::Sprite  sprite;
 };
 
 /*******************************************************************************
  * GUI Systems
  ******************************************************************************/
-using entityx::EntityManager;
-using entityx::EventManager;
-using entityx::TimeDelta;
-using entityx::Receiver;
-using entityx::System;
-using entityx::EntityCreatedEvent;
-using entityx::EntityDestroyedEvent;
-using entityx::ComponentAddedEvent;
-using entityx::ComponentRemovedEvent;
+using ex::EntityManager;
+using ex::EventManager;
+using ex::TimeDelta;
+using ex::EntityCreatedEvent;
+using ex::EntityDestroyedEvent;
+using ex::ComponentAddedEvent;
+using ex::ComponentRemovedEvent;
 using sf::RenderWindow;
+using MTG::Component::ZoneComponent;
     
 class RenderSystem
-    : public System<RenderSystem>
-    , public Receiver<RenderSystem> {
+    : public ex::System<RenderSystem>
+    , public ex::Receiver<RenderSystem> {
 public:
     RenderSystem(RenderWindow& window)
         : m_window(window)
@@ -92,38 +101,79 @@ public:
     }
 
     void update(EntityManager &enm, EventManager &evm, TimeDelta dt) {
-        if(!m_requiresUpdate) return;
+        //if(!m_requiresUpdate) return;
         m_window.clear(sf::Color::Black);
-
-        enm.each<SpriteComponent>([&](auto e, auto& sprite) {
-            sf::RectangleShape r(sf::Vector2f(sprite.position.x, sprite.position.y));
-            r.setSize(sf::Vector2f(sprite.size.w, sprite.size.h));
-            m_window.draw(r);
-        });
-        
+        renderHand(enm,evm,dt);
         m_window.display();
-        m_requiresUpdate = false;
+        //m_requiresUpdate = false;
+    }
+
+    template<typename T>
+    void receive(const T& evt) { m_requiresUpdate = true; }
+protected:
+    
+    void renderHand(EntityManager& enm, EventManager& evm, TimeDelta dt) {
+        // Hand is rendered on a circle with a specified width. The cards
+        // are overlapped to fit within a certain section of the circle.
+        auto   winSize   = sf::Vector2f{1024.0f,768.0f};
+        auto   origin    = sf::Vector2f{ winSize.x/2.0f, (float)winSize.y };
+
+        auto makePoints = [&] (int npoints) {
+            auto a = winSize.y;
+            auto b = winSize.x;
+            auto spread  = M_PI/6.0f;
+            
+            auto origin = std::make_tuple(winSize.x/2.0f, (float)winSize.y);
+            auto start  = spread / 2.0f;
+            auto diff   = spread / (float)(npoints - 1);
+            
+            auto i      = 0;
+            auto points = std::vector<std::tuple<float,float,float>>(npoints);
+            std::generate(points.begin(), points.end(), [&] {
+                auto theta = i*diff - start;
+                auto cos   = std::cos(theta);
+                auto sin   = std::sin(theta);
+                auto r     = a * b / std::sqrt( pow(a*sin,2) + pow(b*cos,2) );
+                auto x = std::get<0>(origin) + r * sin;
+                auto y = std::get<1>(origin) - r * cos;
+                ++i;
+                return std::make_tuple(x,y,theta/M_PI*180.0f);
+            });
+            auto adj = (float)winSize.y - std::get<1>(points[0]) - 5.0f;
+            std::transform(points.begin(), points.end(), points.begin(),
+                           [&](auto v) {
+                return std::make_tuple(
+                    std::get<0>(v),
+                    std::get<1>(v) + adj,
+                    std::get<2>(v)
+                );
+            });
+            return points;
+        };
+        auto points = makePoints(5);
+        for( auto& p : points ) {
+            auto c  = sf::CircleShape(5.0f,20);
+            c.setPosition({std::get<0>(p), std::get<1>(p)});
+            m_window.draw(c);
+        }
+        
+        auto handIndex = 0;
+        auto f = [&](auto e, auto& sprite, const auto& zone){
+            const auto x     = std::get<0>(points[handIndex]);
+            const auto y     = std::get<1>(points[handIndex]);
+            const auto theta = std::get<2>(points[handIndex]);
+
+            auto& s = sprite.sprite;
+            const auto bounds = s.getLocalBounds();
+            s.setOrigin(bounds.width/2.0f, bounds.height/2.0f);
+            s.setPosition(x,y);
+            s.setRotation(theta);
+            m_window.draw(s);
+            ++handIndex;
+        };
+        enm.each<SpriteComponent, ZoneComponent>(f);
     }
     
-    void receive(const EntityCreatedEvent& evt) {
-        std::cout << "Update required\n";
-        m_requiresUpdate = true;        
-    }
-
-    void receive(const EntityDestroyedEvent& evt) {
-        std::cout << "Update required\n";
-        m_requiresUpdate = true;
-    }
-
-    void receive(const ComponentAddedEvent<SpriteComponent>& evt) {
-        std::cout << "Update required\n";
-        m_requiresUpdate = true;
-    }
-
-    void receive(const ComponentRemovedEvent<SpriteComponent>& evt) {
-        std::cout << "Update required\n";
-        m_requiresUpdate = true;
-    }
 private:
     RenderWindow& m_window;
     bool          m_requiresUpdate;
@@ -131,8 +181,8 @@ private:
 
 // - Emits SpriteClickEvent's
 class MouseClickSystem
-    : public System<MouseClickSystem>
-    , public Receiver<MouseClickSystem> {
+    : public ex::System<MouseClickSystem>
+    , public ex::Receiver<MouseClickSystem> {
 public:
     void configure(EventManager &evm) {
         evm.subscribe<MouseClickEvent>(*this);
@@ -143,13 +193,13 @@ public:
             auto evt = m_clicks.front();
 
             // Fire an EntityActivationEvent for the entity that was
-            // clicked
+            // clicked, this event is routed to the FSM for game logic
+            // crunching.
             enm.each<SpriteComponent>([&](auto e, auto& sprite) {
-                    sf::Rect<int> r(sprite.position.x, sprite.position.y,
-                                    sprite.size.w, sprite.size.h);
-                    if(r.contains(evt.position.x, evt.position.y)) {
-                        evm.emit<EntityActivationEvent>({e});
-                    }
+                auto bounds = sprite.sprite.getTextureRect();
+                if(bounds.contains(evt.position.x, evt.position.y)) {
+                    evm.emit<EntityActivationEvent>(e);
+                }
             });
             m_clicks.pop_front();
         }
@@ -166,7 +216,6 @@ private:
 
 int main() {
     using namespace MTG::cards;
-    using namespace entityx;
     using MTG::GameFsm;
     using MTG::Component::CreatureComponent;
     using MTG::Component::EnchantCreatureComponent;
@@ -175,24 +224,19 @@ int main() {
     using MTG::GUI::MouseClickSystem;
     using MTG::GUI::RenderSystem;
 
-    EntityX ex;
-    GameFsm fsm;
+    EntityX  ex;
+    GameFsm  fsm{ex.entities, ex.events};
     
-    sf::RenderWindow window(sf::VideoMode(800,600), "Magic The Gathering");
+    sf::RenderWindow window(sf::VideoMode(1024,768), "Magic The Gathering");
     ex.systems.add<MouseClickSystem>();
     ex.systems.add<RenderSystem>(window);
     ex.systems.configure();
 
-    auto e = makeAeronautAdmiral(ex);
-    
-    auto sprite = e.assign<MTG::GUI::SpriteComponent>();
-    sprite->position.x = 0;
-    sprite->position.y = 0;
-    sprite->size.w = 100;
-    sprite->size.h = 100;
-    
-    auto zone = e.assign<ZoneComponent>();
-    zone->zone = MTG::Constants::Zone::HAND;
+    for(auto i = 0 ; i < 5 ; ++i ) {
+        auto e = makeAeronautAdmiral(ex);    
+        e.assign<MTG::GUI::SpriteComponent>("AeronautAdmiral.jpg");
+        e.assign<ZoneComponent>()->zone = MTG::Constants::Zone::HAND;
+    }
     
     while(window.isOpen()) {
         sf::Event evt;
@@ -210,12 +254,10 @@ int main() {
             default:
                 break;
             }
-            ex.systems.update<MouseClickSystem>(TimeDelta(1.0));
-            ex.systems.update<RenderSystem>(TimeDelta(1.0));
         }
+        ex.systems.update_all(1.0);        
     }
     
-    e.destroy();    
     // fsm.dispatch(MTG::Event{ex});
     
     

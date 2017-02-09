@@ -6,6 +6,8 @@
 #include "Energy.hpp"
 #include "Mana.hpp"
 #include "Enchant.hpp"
+#include "entityx/entityx.h"
+#include "tinyfsm.hpp"
 
 namespace MTG {
 namespace Component {
