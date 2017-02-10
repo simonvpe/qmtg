@@ -19,6 +19,10 @@ enum class Phase {
 struct GameState : public ex::EntityX {
     Phase phase;
 };
+
+auto canPlaySorcery(GameState &state) {
+    return state.phase == Phase::MAIN_1 || state.phase == Phase::MAIN_2;
+}
     
 // Planswalker
     
@@ -27,6 +31,7 @@ struct Loyalty {
     Loyalty(const Loyalty&) = default;
     bool operator==(const Loyalty& rhs) const { return value == rhs.value; }
     bool operator>(int rhs) const { return value > rhs; }
+    bool operator<=(int rhs) const { return value <= rhs; }
     Loyalty &operator-=(int rhs) { value -= rhs; return *this; }
     int value;
 };
@@ -41,6 +46,23 @@ struct ParentComponent {
     ex::Entity entity;
 };
 
+auto parentValid(ex::Entity entity) {
+    return entity.component<ParentComponent>()->entity.valid();
+}
+    
+// Zone
+enum class Zone {
+    UNDEFINED,
+    HAND,
+    BATTLEFIELD,
+    LIBRARY,
+    GRAVEYARD    
+};
+
+struct ZoneComponent {
+    Zone zone;
+};
+    
 // Trigger
         
 enum class TriggerProperties {
@@ -89,7 +111,8 @@ bool check(GameState& mgr,
            ex::Entity         triggerEntity,
            ex::Entity         targetEntity) {
     auto trigger = triggerEntity.component<TriggerComponent>();
-    return trigger->check(mgr,triggerEntity,targetEntity);
+    return parentValid(triggerEntity)
+        && trigger->check(mgr,triggerEntity,targetEntity);
 }
 
 void pay(GameState& mgr,
@@ -109,6 +132,9 @@ void action(GameState& mgr,
 auto makeGideonAllyOfZendikar(ex::EntityManager& mgr) {
     auto gideon = mgr.create();
 
+    auto zone = gideon.assign<ZoneComponent>();
+    zone->zone = Zone::UNDEFINED;
+    
     auto planeswalker = gideon.assign<PlaneswalkerComponent>();
     planeswalker->loyalty = { 4 };
 
@@ -129,13 +155,18 @@ auto makeGideonAllyOfZendikar(ex::EntityManager& mgr) {
                             | TriggerProperties::CARD_SLOT_0;
         
         trigger->check = [](GameState& state, ex::Entity self, auto target) {
-            auto gideon = self.component<ParentComponent>()->entity;
-            return gideon.component<PlaneswalkerComponent>()->loyalty > 0
-            && ( state.phase == Phase::MAIN_1 || state.phase == Phase::MAIN_2 );
+            auto gideon  = self.component<ParentComponent>()->entity;
+            auto loyalty = gideon.component<PlaneswalkerComponent>()->loyalty;
+            return loyalty > 0 && canPlaySorcery(state);
         };
 
         trigger->pay = [](GameState& state, ex::Entity self, auto target) {
-            self.component<PlaneswalkerComponent>()->loyalty -= 1;
+            auto  gideon  = self.component<ParentComponent>()->entity;
+            auto& loyalty = gideon.component<PlaneswalkerComponent>()->loyalty;
+            loyalty -= 1;
+            if(loyalty <= 0) {
+                gideon.component<ZoneComponent>()->zone = Zone::GRAVEYARD;
+            }
         };
 
         trigger->action = [](GameState& state, ex::Entity self, auto target) {
@@ -239,16 +270,22 @@ TEST(GideonAllyOfZendikar, test_planeswalker_ability_0_pay) {
     auto& mgr = gs.entities;
 
     auto gideon = MTG::makeGideonAllyOfZendikar(mgr);
-
+    
     auto triggerEntity = first<MTG::TriggerComponent>(mgr, [](auto& component) {
         return test(component.properties & MTG::TriggerProperties::CARD_SLOT_0);
     });
 
-    auto triggerComponent = triggerEntity.component<MTG::TriggerComponent>();
-
     // Survives
-    // TODO
+    gideon.component<MTG::ZoneComponent>()->zone = MTG::Zone::BATTLEFIELD;
+    gideon.component<MTG::PlaneswalkerComponent>()->loyalty = {2};
+    MTG::pay(gs, triggerEntity, ex::Entity{});
+    ASSERT_EQ( MTG::Zone::BATTLEFIELD,
+               gideon.component<MTG::ZoneComponent>()->zone );
 
     // Moved to graveyard
-    // TODO
+    gideon.component<MTG::ZoneComponent>()->zone = MTG::Zone::BATTLEFIELD;
+    gideon.component<MTG::PlaneswalkerComponent>()->loyalty = {1};
+    MTG::pay(gs, triggerEntity, ex::Entity{});
+    ASSERT_EQ( MTG::Zone::GRAVEYARD,
+               gideon.component<MTG::ZoneComponent>()->zone);
 }
