@@ -1,5 +1,8 @@
 #include "gtest/gtest.h"
 #include "entityx/quick.h"
+#include "gamestate.hpp"
+#include "common.hpp"
+#include "component.hpp"
 
 #include <vector>
 
@@ -7,223 +10,16 @@ namespace ex = entityx;
 
 #include <functional>
 namespace MTG {
-
-// Game state
-enum class Phase {
-    UNDEFINED = 0,
-    BEGINNING = (1 << 0),
-    MAIN_1    = (1 << 1),
-    COMBAT    = (1 << 2),
-    MAIN_2    = (1 << 3),
-    ENDING    = (1 << 4)
-};
-    
-struct GameState : public ex::EntityX {
-    Phase                   phase;
-    std::vector<ex::Entity> stack;
-
-    template<typename TTrigger>    
-    void action(ex::Entity trigger, ex::Entity target = {}) {
-        auto c = trigger.component<TTrigger>();
-        c->action(*this, trigger, target);
-    }
-
-    template<typename TTrigger>
-    bool check(ex::Entity trigger, ex::Entity target = {}) {
-        auto c = trigger.component<TTrigger>();
-        return c->check(*this,trigger,target);
-    }
-
-    template<typename TTrigger>    
-    void pay(ex::Entity trigger, ex::Entity target = {}) {
-        auto c = trigger.component<TTrigger>();
-        return c->pay(*this,trigger,target);
-    }
-};
-    
-auto canPlaySorcery(GameState &state) {
-    return state.stack.empty()
-        && (state.phase == Phase::MAIN_1 || state.phase == Phase::MAIN_2);
-}
-
-template<Phase P>
-bool check(GameState& mgr) {
-    return P == mgr.phase;
-}
-    
-// Util
-template<typename Super>
-struct Metric {
-    Metric(int v = 0) : value{v} {}
-    Metric(const Metric&) = default;
-    bool    operator==(const Metric& rhs) const { return value == rhs.value; }
-    bool    operator> (int rhs)           const { return value > rhs; }
-    bool    operator<=(int rhs)           const { return value <= rhs; }
-    bool    operator>=(int rhs)           const { return value >= rhs; }
-    Metric &operator-=(int rhs)                 { value -= rhs; return *this; }
-    Metric &operator+=(int rhs)                 { value += rhs; return *this; }    
-    int value;    
-};
-
-template<typename TEnum>
-TEnum operator|(TEnum a, TEnum b ) {
-    using T = std::underlying_type_t<TEnum>;
-    return (TEnum)((T)a | (T)b);
- }
-
-template<typename TEnum>    
-TEnum operator&(TEnum a, TEnum b ) {
-    using T = std::underlying_type_t<TEnum>;
-    return (TEnum)((T)a & (T)b);
- }
-    
-// Planeswalker
-    
-struct Loyalty : public Metric<Loyalty> {};
-    
-struct PlaneswalkerComponent {
-    Loyalty loyalty;
-};
-
-auto planeswalker(ex::Entity entity) {
-    return entity.component<PlaneswalkerComponent>();
-}
-    
-// Child    
-    
-struct ParentComponent {
-    ex::Entity entity;
-};
-
-auto parent(ex::Entity entity) {
-    return entity.component<ParentComponent>()->entity;
-}
-    
-// Zone
-enum class Zone {
-    UNDEFINED    = 0,
-    HAND         = (1 << 0),
-    BATTLEFIELD  = (1 << 1),
-    LIBRARY      = (1 << 2),
-    GRAVEYARD    = (1 << 3),
-    COMMAND      = (1 << 4)
-};
-
-struct ZoneComponent {
-    Zone zone;
-};
-
-auto zone(ex::Entity entity) {
-    return entity.component<ZoneComponent>();
-}
-    
-template<Zone Z>
-bool check(ex::Entity entity) {
-    auto component = zone(entity);
-    return component.valid() && (Z == component->zone);
-}
-    
-// Creature
-    
-enum class CreatureType {
-    UNDEFINED = 0,
-    HUMAN     = (1 << 0),
-    KNIGHT    = (1 << 1)
-};
-
-enum class CreatureClass {
-    UNDEFINED = 0,
-    SOLDIER   = (1 << 0),
-    TOKEN     = (1 << 1),
-    ALLY      = (1 << 2)
-};
-
-struct Power : Metric<Power> {};
-    
-struct Toughness : Metric<Toughness> {};
-    
-struct CreatureComponent {
-    Power         power;
-    Toughness     toughness;
-    CreatureType  type;
-    CreatureClass classs;
-};
-
-auto creature(ex::Entity entity) {
-    return entity.component<CreatureComponent>();
-}
-    
-// Emblem
-struct EmblemComponent {
-};
-    
-// Mechanic
-    
-struct MechanicComponent {
-    bool summoningSickness;
-};
-
-auto mechanic(ex::Entity entity) {
-    return entity.component<MechanicComponent>();
-}
-    
-// Trigger
         
-enum class ManualTriggerProperties {
-    UNDEFINED   = 0,
-    CARD_SLOT_0 = (1 << 0),
-    CARD_SLOT_1 = (1 << 1),
-    CARD_SLOT_2 = (1 << 2)
-};
-
-enum class Timing {
-    UNDEFINED = 0,
-    INSTANT   = (1 << 0),
-    SORCERY   = (1 << 1)
-};
-    
-bool test(ManualTriggerProperties a) {
-    using T = std::underlying_type_t<ManualTriggerProperties>;
-    return (T)a != 0;
-}
-    
-using TriggerCheck = std::function<
-    bool(GameState&, ex::Entity self, ex::Entity target)
->;
-
-using TriggerPayment = std::function< // Need multiple tagets
-    void(GameState&, ex::Entity self, ex::Entity target)
->;
-
-using TriggerAction = std::function<
-    void(GameState&, ex::Entity self, ex::Entity target)
->;
-    
-struct ManualTriggerComponent {
-    ManualTriggerProperties properties; // Contains information about the trigger
-    TriggerCheck            check;      // Checks if the card can be triggered
-    TriggerPayment          pay;        // Pays for the trigger
-    TriggerAction           action;     // Activate the trigger
-};
-
-struct EndOfTurnTriggerComponent {
-    TriggerAction action;
-};    
-
-template<Timing T>
-bool check(GameState& mgr);
-    
-template<>
-bool check<Timing::SORCERY>(GameState& mgr) {
-    return mgr.phase == Phase::MAIN_1
-        || mgr.phase == Phase::MAIN_2;
-}
     
 auto makeGideonAllyOfZendikar(ex::EntityManager& mgr) {
     auto gideon = mgr.create();
     gideon.assign<ZoneComponent>()->zone                  = Zone::UNDEFINED;
     gideon.assign<PlaneswalkerComponent>()->loyalty       = {4};
     gideon.assign<MechanicComponent>()->summoningSickness = true;
+    auto cost = gideon.assign<CardCostComponent>();
+    cost->generic = {2};
+    cost->white   = {2};
     
     // +1
     // ----------------------------------------------------------------------
@@ -335,7 +131,15 @@ auto makeGideonAllyOfZendikar(ex::EntityManager& mgr) {
 
         trigger->action = [](GameState& state, ex::Entity self, auto target) {
             auto card = state.entities.create();
-            auto emblem = card.assign<EmblemComponent>();
+            auto trigger = card.assign<EnterBattlefieldTriggerComponent>();
+            trigger->action = [](GameState& state, ex::Entity self, auto target) {
+                auto effect = state.entities.create();
+                auto buff   = effect.assign<BuffComponent>();
+                buff->power     = {1};
+                buff->toughness = {1};
+                buff->parent    = target;
+            };
+            card.assign<EmblemComponent>();
         };
     }
        
@@ -519,7 +323,6 @@ TEST_F(GideonAllyOfZendikar, test_ability_1_pay) {
     auto trigger = first<ManualTriggerComponent>(mgr, [](auto& component) {
         return test(component.properties & ManualTriggerProperties::CARD_SLOT_1);
     });
-    ASSERT_TRUE( planeswalker(gideon).valid() );
     
     const auto loyalty = planeswalker(gideon)->loyalty;
     game->pay<ManualTriggerComponent>(trigger, ex::Entity{});
@@ -543,4 +346,63 @@ TEST_F(GideonAllyOfZendikar, test_ability_1_action) {
     EXPECT_EQ( CreatureClass::ALLY | CreatureClass::TOKEN, creature(token)->classs );
     ASSERT_TRUE( mechanic(token).valid() );
     EXPECT_TRUE( mechanic(token)->summoningSickness );
+}
+
+TEST_F(GideonAllyOfZendikar, test_ability_2_created) {
+    auto& mgr = game->entities;
+    ASSERT_EQ(1, count<ManualTriggerComponent>(mgr,[&](auto& component) {
+        return (test(component.properties & ManualTriggerProperties::CARD_SLOT_2));
+    }));
+}
+
+TEST_F(GideonAllyOfZendikar, test_ability2_check) {
+    auto& mgr = game->entities;
+    auto trigger = first<ManualTriggerComponent>(mgr, [](auto& component) {
+        return test(component.properties & ManualTriggerProperties::CARD_SLOT_2);
+    });
+    zone(gideon)->zone = Zone::BATTLEFIELD;
+    
+    // Phase good
+    game->phase = Phase::MAIN_1;
+    EXPECT_TRUE(game->check<ManualTriggerComponent>(trigger, Entity{}));
+
+    // Phase good
+    game->phase = Phase::MAIN_2;
+    EXPECT_TRUE(game->check<ManualTriggerComponent>(trigger, Entity{}));
+    
+    // Phase bad
+    game->phase = Phase::BEGINNING;
+    ASSERT_FALSE(game->check<ManualTriggerComponent>(trigger, Entity{}));
+}
+
+TEST_F(GideonAllyOfZendikar, test_ability_2_pay) {
+    auto& mgr = game->entities;
+    auto trigger = first<ManualTriggerComponent>(mgr, [](auto& component) {
+        return test(component.properties & ManualTriggerProperties::CARD_SLOT_2);
+    });
+    
+    const auto loyalty = planeswalker(gideon)->loyalty;
+    game->pay<ManualTriggerComponent>(trigger, ex::Entity{});
+    EXPECT_EQ( loyalty - 4, planeswalker(gideon)->loyalty );
+}
+
+TEST_F(GideonAllyOfZendikar, test_ability_2_action) {
+    auto& mgr = game->entities;
+    auto trigger = first<ManualTriggerComponent>(mgr, [](auto& component) {
+        return test(component.properties & ManualTriggerProperties::CARD_SLOT_2);
+    });
+
+    EXPECT_FALSE(creature(gideon).valid());
+    game->action<ManualTriggerComponent>(trigger, ex::Entity{});
+
+    auto emblem = first<EnterBattlefieldTriggerComponent>(mgr);
+    ASSERT_TRUE(emblem.valid());
+    
+        
+    // Trigger end of turn and make sure Gideons creature is removed
+    // auto endTrigger = first<EndOfTurnTriggerComponent>(mgr);
+    // ASSERT_TRUE( endTrigger.valid() );
+    // game->action<EndOfTurnTriggerComponent>(endTrigger, ex::Entity{} );
+    // EXPECT_FALSE( endTrigger.valid() );
+    // EXPECT_FALSE( creature(gideon).valid() );
 }
