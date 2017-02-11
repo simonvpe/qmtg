@@ -43,7 +43,7 @@ struct GameState : public EntityX {
  *
  **/
 template<typename TTrigger>    
-void GameState::action(Entity trigger, Entity target) {
+inline void GameState::action(Entity trigger, Entity target) {
     auto c = trigger.component<TTrigger>();
     c->action(*this, trigger, target);
 }
@@ -58,7 +58,7 @@ void GameState::action(Entity trigger, Entity target) {
  * @returns true if the trigger can be activated
  **/
 template<typename TTrigger>
-bool GameState::check(Entity trigger, Entity target) {
+inline bool GameState::check(Entity trigger, Entity target) {
     auto c = trigger.component<TTrigger>();
     return c->check(*this,trigger,target);
 }
@@ -71,7 +71,7 @@ bool GameState::check(Entity trigger, Entity target) {
  * @param  target   The target  entity
  **/
 template<typename TTrigger>    
-void GameState::pay(Entity trigger, Entity target) {
+inline void GameState::pay(Entity trigger, Entity target) {
     auto c = trigger.component<TTrigger>();
     return c->pay(*this,trigger,target);
 }
@@ -83,7 +83,7 @@ void GameState::pay(Entity trigger, Entity target) {
  *
  * @returns true if it is allowed to play a sorcery
  **/
-bool canPlaySorcery(GameState &state) {
+inline bool canPlaySorcery(GameState &state) {
     const auto empty = state.stack.empty();
     const auto main1 = state.phase == Phase::MAIN_1;
     const auto main2 = state.phase == Phase::MAIN_2;
@@ -92,15 +92,15 @@ bool canPlaySorcery(GameState &state) {
 
     
 template<Phase P>
-bool check(GameState& mgr) {
+inline bool check(GameState& mgr) {
     return P == mgr.phase;
 }
 
 template<Timing T>
-bool check(GameState& mgr);
+inline bool check(GameState& mgr);
     
 template<>
-bool check<Timing::SORCERY>(GameState& mgr) {
+inline bool check<Timing::SORCERY>(GameState& mgr) {
     return mgr.phase == Phase::MAIN_1
         || mgr.phase == Phase::MAIN_2;
 }

@@ -4,8 +4,6 @@
 #include "common.hpp"
 #include "component.hpp"
 
-#include <vector>
-
 namespace ex = entityx;
 
 #include <functional>
@@ -181,7 +179,7 @@ auto first(ex::EntityManager& mgr) {
 
 // Tests
 
-struct GideonAllyOfZendikar : public ::testing::Test {
+struct GideonAllyOfZendikarTest : public ::testing::Test {
     virtual void SetUp() {
         game   = new MTG::GameState{};
         gideon = MTG::makeGideonAllyOfZendikar(game->entities);
@@ -200,24 +198,24 @@ struct GideonAllyOfZendikar : public ::testing::Test {
 using namespace MTG;
 using namespace ex;
 
-TEST_F(GideonAllyOfZendikar, test_planeswalker_loyalty) {
+TEST_F(GideonAllyOfZendikarTest, test_planeswalker_loyalty) {
     ASSERT_TRUE( planeswalker(gideon).valid() );
     EXPECT_EQ( Loyalty{4}, planeswalker(gideon)->loyalty );
 }
 
-TEST_F(GideonAllyOfZendikar, test_mechanic_summoning_sickness) {
+TEST_F(GideonAllyOfZendikarTest, test_mechanic_summoning_sickness) {
     ASSERT_TRUE( mechanic(gideon).valid() );
     EXPECT_EQ( true, mechanic(gideon)->summoningSickness );
 }
 
-TEST_F(GideonAllyOfZendikar, test_ability_0_created) {
+TEST_F(GideonAllyOfZendikarTest, test_ability_0_created) {
     auto& mgr = game->entities;
     ASSERT_EQ(1, count<ManualTriggerComponent>(mgr,[](auto& component) {
         return test(component.properties & ManualTriggerProperties::CARD_SLOT_0);
     }));
 }
 
-TEST_F(GideonAllyOfZendikar, test_ability_0_entity) {
+TEST_F(GideonAllyOfZendikarTest, test_ability_0_entity) {
     auto& mgr = game->entities;
     auto trigger = first<ManualTriggerComponent>(mgr, [](auto& component) {
         return test(component.properties & ManualTriggerProperties::CARD_SLOT_0);
@@ -225,7 +223,7 @@ TEST_F(GideonAllyOfZendikar, test_ability_0_entity) {
     ASSERT_EQ(gideon, parent(trigger));
 }
 
-TEST_F(GideonAllyOfZendikar, test_ability0_check) {
+TEST_F(GideonAllyOfZendikarTest, test_ability0_check) {
     auto& mgr = game->entities;
     auto triggerEntity = first<ManualTriggerComponent>(mgr, [](auto& component) {
         return test(component.properties & ManualTriggerProperties::CARD_SLOT_0);
@@ -251,7 +249,7 @@ TEST_F(GideonAllyOfZendikar, test_ability0_check) {
     EXPECT_FALSE(game->check<ManualTriggerComponent>(triggerEntity, ex::Entity{}));
 }
 
-TEST_F(GideonAllyOfZendikar, test_ability_0_pay) {
+TEST_F(GideonAllyOfZendikarTest, test_ability_0_pay) {
     auto& mgr = game->entities;
     auto triggerEntity = first<ManualTriggerComponent>(mgr, [](auto& component) {
         return test(component.properties & ManualTriggerProperties::CARD_SLOT_0);
@@ -265,7 +263,7 @@ TEST_F(GideonAllyOfZendikar, test_ability_0_pay) {
     EXPECT_EQ( Loyalty{3}, planeswalker(gideon)->loyalty );
 }
 
-TEST_F(GideonAllyOfZendikar, test_ability_0_action) {
+TEST_F(GideonAllyOfZendikarTest, test_ability_0_action) {
     auto& mgr = game->entities;
     auto trigger = first<ManualTriggerComponent>(mgr, [](auto& component) {
         return test(component.properties & ManualTriggerProperties::CARD_SLOT_0);
@@ -288,14 +286,14 @@ TEST_F(GideonAllyOfZendikar, test_ability_0_action) {
     EXPECT_FALSE( creature(gideon).valid() );
 }
 
-TEST_F(GideonAllyOfZendikar, test_ability1_created) {
+TEST_F(GideonAllyOfZendikarTest, test_ability1_created) {
     auto& mgr = game->entities;
     ASSERT_EQ(1, count<ManualTriggerComponent>(mgr,[&](auto& component) {
         return (test(component.properties & ManualTriggerProperties::CARD_SLOT_1));
     }));
 }
 
-TEST_F(GideonAllyOfZendikar, test_ability1_check) {
+TEST_F(GideonAllyOfZendikarTest, test_ability1_check) {
     auto& mgr = game->entities;
     auto trigger = first<ManualTriggerComponent>(mgr, [](auto& component) {
         return test(component.properties & ManualTriggerProperties::CARD_SLOT_1);
@@ -318,7 +316,7 @@ TEST_F(GideonAllyOfZendikar, test_ability1_check) {
 }
 
 
-TEST_F(GideonAllyOfZendikar, test_ability_1_pay) {
+TEST_F(GideonAllyOfZendikarTest, test_ability_1_pay) {
     auto& mgr = game->entities;
     auto trigger = first<ManualTriggerComponent>(mgr, [](auto& component) {
         return test(component.properties & ManualTriggerProperties::CARD_SLOT_1);
@@ -329,7 +327,7 @@ TEST_F(GideonAllyOfZendikar, test_ability_1_pay) {
     EXPECT_EQ( loyalty, planeswalker(gideon)->loyalty );
 }
 
-TEST_F(GideonAllyOfZendikar, test_ability_1_action) {
+TEST_F(GideonAllyOfZendikarTest, test_ability_1_action) {
     auto& mgr = game->entities;
     auto trigger = first<ManualTriggerComponent>(mgr, [](auto& component) {
         return test(component.properties & ManualTriggerProperties::CARD_SLOT_1);
@@ -348,14 +346,14 @@ TEST_F(GideonAllyOfZendikar, test_ability_1_action) {
     EXPECT_TRUE( mechanic(token)->summoningSickness );
 }
 
-TEST_F(GideonAllyOfZendikar, test_ability_2_created) {
+TEST_F(GideonAllyOfZendikarTest, test_ability_2_created) {
     auto& mgr = game->entities;
     ASSERT_EQ(1, count<ManualTriggerComponent>(mgr,[&](auto& component) {
         return (test(component.properties & ManualTriggerProperties::CARD_SLOT_2));
     }));
 }
 
-TEST_F(GideonAllyOfZendikar, test_ability2_check) {
+TEST_F(GideonAllyOfZendikarTest, test_ability2_check) {
     auto& mgr = game->entities;
     auto trigger = first<ManualTriggerComponent>(mgr, [](auto& component) {
         return test(component.properties & ManualTriggerProperties::CARD_SLOT_2);
@@ -375,7 +373,7 @@ TEST_F(GideonAllyOfZendikar, test_ability2_check) {
     ASSERT_FALSE(game->check<ManualTriggerComponent>(trigger, Entity{}));
 }
 
-TEST_F(GideonAllyOfZendikar, test_ability_2_pay) {
+TEST_F(GideonAllyOfZendikarTest, test_ability_2_pay) {
     auto& mgr = game->entities;
     auto trigger = first<ManualTriggerComponent>(mgr, [](auto& component) {
         return test(component.properties & ManualTriggerProperties::CARD_SLOT_2);
@@ -386,7 +384,7 @@ TEST_F(GideonAllyOfZendikar, test_ability_2_pay) {
     EXPECT_EQ( loyalty - 4, planeswalker(gideon)->loyalty );
 }
 
-TEST_F(GideonAllyOfZendikar, test_ability_2_action) {
+TEST_F(GideonAllyOfZendikarTest, test_ability_2_action) {
     auto& mgr = game->entities;
     auto trigger = first<ManualTriggerComponent>(mgr, [](auto& component) {
         return test(component.properties & ManualTriggerProperties::CARD_SLOT_2);
