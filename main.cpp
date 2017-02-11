@@ -1,7 +1,5 @@
 #include "entityx/entityx.h"
 #include "SFML/Graphics.hpp"
-#include "MTG/cards/cards.hpp"
-#include "MTG/system/system.hpp"
 #include <iostream>
 #include <deque>
 #include <cmath>
@@ -12,20 +10,11 @@ namespace ex = entityx;
  * FSM
  ******************************************************************************/
 namespace MTG {
-using Constants::TableState;
     
 struct EntityActivationEvent {
     EntityActivationEvent(ex::Entity& e) : entity(e) {}
     ex::Entity entity;
 };
-
-template<typename EventType>    
-TableState action(TableState, EventType);
-
-template<>    
-TableState action(TableState state, EntityActivationEvent evt) {
-    return TableState::READY_TO_START;
-}
 
 // Receives events from entityx and dispatches to
 // game FSM. These events must be tinyfsm::Event's
@@ -34,21 +23,17 @@ public:
 
     GameFsm(ex::EntityManager& em, ex::EventManager& evm)
         : m_entities{em}
-        , m_events{evm}
-        , m_tableState{TableState::WAITING} {
+        , m_events{evm} {
         evm.subscribe<EntityActivationEvent>(*this);
     }
     
     template<typename T>
     void receive(const T& evt) {
-        m_tableState = action(m_tableState, evt);
-        std::cout << "TableState is now " << (int)m_tableState << std::endl;
     }
     
 private:
     ex::EntityManager&    m_entities;
     ex::EventManager&     m_events;
-    TableState            m_tableState;
 };
 
 namespace GUI {
@@ -82,7 +67,6 @@ using ex::EntityDestroyedEvent;
 using ex::ComponentAddedEvent;
 using ex::ComponentRemovedEvent;
 using sf::RenderWindow;
-using MTG::Component::ZoneComponent;
     
 class RenderSystem
     : public ex::System<RenderSystem>
@@ -171,7 +155,7 @@ protected:
             m_window.draw(s);
             ++handIndex;
         };
-        enm.each<SpriteComponent, ZoneComponent>(f);
+        //enm.each<SpriteComponent, ZoneComponent>(f);
     }
     
 private:
@@ -215,16 +199,12 @@ private:
 } // namespace MTG
 
 int main() {
-    using namespace MTG::cards;
     using MTG::GameFsm;
-    using MTG::Component::CreatureComponent;
-    using MTG::Component::EnchantCreatureComponent;
-    using MTG::Component::ZoneComponent;
     using MTG::GUI::MouseClickEvent;
     using MTG::GUI::MouseClickSystem;
     using MTG::GUI::RenderSystem;
 
-    EntityX  ex;
+    entityx::EntityX  ex;
     GameFsm  fsm{ex.entities, ex.events};
     
     sf::RenderWindow window(sf::VideoMode(1024,768), "Magic The Gathering");
@@ -233,9 +213,9 @@ int main() {
     ex.systems.configure();
 
     for(auto i = 0 ; i < 5 ; ++i ) {
-        auto e = makeAeronautAdmiral(ex);    
-        e.assign<MTG::GUI::SpriteComponent>("AeronautAdmiral.jpg");
-        e.assign<ZoneComponent>()->zone = MTG::Constants::Zone::HAND;
+        //auto e = makeAeronautAdmiral(ex);    
+        //e.assign<MTG::GUI::SpriteComponent>("AeronautAdmiral.jpg");
+        //e.assign<ZoneComponent>()->zone = MTG::Constants::Zone::HAND;
     }
     
     while(window.isOpen()) {

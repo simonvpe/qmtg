@@ -1,6 +1,5 @@
 #include "gtest/gtest.h"
 #include "entityx/quick.h"
-#include "cards/cards.hpp"
 
 #include <vector>
 
