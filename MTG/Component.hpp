@@ -8,7 +8,7 @@
 #include "Enchant.hpp"
 #include "entityx/entityx.h"
 
-namespace MTG {
+namespace MTG {    
 namespace Component {
     
 struct CardComponent {

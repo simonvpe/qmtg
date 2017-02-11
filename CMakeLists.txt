@@ -14,5 +14,6 @@ add_executable(mtg main.cpp)
 target_link_libraries(mtg LINK_PUBLIC entityx sfml-system sfml-window sfml-graphics)
 
 add_executable(testrunner test/GideonAllyOfZendikar.cpp)
+SET_TARGET_PROPERTIES(testrunner PROPERTIES COMPILE_FLAGS "-Wall")
 target_link_libraries(testrunner LINK_PUBLIC entityx gtest gtest_main)
 
