@@ -1,11 +1,10 @@
-#include "entityx/quick.h"
-#include "spdlog/spdlog.h"
 #include "common.hpp"
 #include "gamestate.hpp"
 #include "component.hpp"
-#include "catch.hpp"
 #include "event.hpp"
 #include "factory.hpp"
+
+#include "catch.hpp"
 
 #include <functional>
 #include <deque>

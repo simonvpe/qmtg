@@ -23,6 +23,7 @@ target_link_libraries(mtg LINK_PUBLIC entityx sfml-system sfml-window sfml-graph
 add_executable(testrunner
   test/testrunner.cpp
   test/TriggerTest.cpp
+  test/TurnTest.cpp
   test/GideonAllyOfZendikarTest.cpp
   )
 set(THREADS_PREFER_PTHREAD_FLAG OFF)
