@@ -1,8 +1,9 @@
 #pragma once
 #include "entityx/entityx.h"
-#include "gamestate.hpp"
 #include "common.hpp"
 #include "constants.hpp"
+
+#include <functional>
 
 namespace MTG {
 using namespace entityx;
@@ -20,21 +21,15 @@ struct ManualTriggerComponent; // deprecated
 struct EndOfTurnTriggerComponent; // deprecated
 struct EnterBattlefieldTriggerComponent; // deprecated
 struct BuffComponent;
+
+// GameState forward declaration
+struct GameState;
     
 // Metrics used in different components
 using Loyalty   = int;
 using Mana      = int;
 using Power     = int;
 using Toughness = int;
-
-// Convenience functions
-auto& parent(Entity entity);    
-auto  planeswalker(Entity entity);
-auto  zone(Entity entity);
-template<Zone Z> auto check(Entity entity);
-auto  creature(Entity entity);    
-auto  mechanic(Entity entity);    
-auto  test(ManualTriggerProperties a);
     
 ////////////////////////////////////////////////////////////////////////////////
 // Implementations follow
@@ -63,7 +58,7 @@ struct CreatureComponent {
 };
 struct EmblemComponent   { };
 struct MechanicComponent { bool summoningSickness; };
-    
+
 using TriggerCheck = std::function<
     bool(GameState&, Entity self, Entity target)
 >;
@@ -105,40 +100,5 @@ struct BuffComponent {
     Toughness  toughness;
     Entity     parent;
 };
-
-
-inline auto& parent(Entity entity) {
-    return entity.component<ParentComponent>()->entity;
-}
-
-inline auto& effect(Entity entity) {
-    return entity.component<TriggerComponent>()->effect;
-}
-    
-inline auto planeswalker(Entity entity) {
-    return entity.component<PlaneswalkerComponent>();
-}
-    
-inline auto zone(Entity entity) {
-    return entity.component<ZoneComponent>();
-}
-    
-template<Zone Z>
-inline auto check(Entity entity) {
-    return Z == zone(entity)->current;
-}
-    
-inline auto creature(Entity entity) {
-    return entity.component<CreatureComponent>();
-}
-    
-inline auto mechanic(Entity entity) {
-    return entity.component<MechanicComponent>();
-}
-    
-inline auto test(ManualTriggerProperties a) {
-    using T = std::underlying_type_t<ManualTriggerProperties>;
-    return (T)a != 0;
-}
     
 } // namespace MTG

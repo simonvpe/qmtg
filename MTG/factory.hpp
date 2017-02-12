@@ -1,22 +1,27 @@
 #pragma once
 #include "common.hpp"
 #include "component.hpp"
+#include "check.hpp"
 
 namespace MTG {
 using namespace entityx;    
     
-void move(Entity e, Zone z) {
+inline void move(Entity e, Zone z) {
     auto component = zone(e);
     DBG("Moving entity {} from {} to {}", e,(int)component->current, (int)z);
     component->previous = component->current;
     component->current = z;
 }
 
-auto addParent(Entity child) {
+inline auto addParent(Entity child) {
     return child.assign<ParentComponent>();
 };
+
+inline auto makePlayer(EntityManager& mgr, const char *name) {
+    return mgr.create();
+}
     
-auto makeTrigger(EntityManager&     mgr,
+inline auto makeTrigger(EntityManager&     mgr,
                  TriggerTiming   tt,
                  TriggerLifetime tl,
                  Entity          effect,
@@ -33,7 +38,7 @@ auto makeTrigger(EntityManager&     mgr,
     return trigger;
 }
 
-auto makeEffect(EntityManager& mgr) {
+inline auto makeEffect(EntityManager& mgr) {
     auto entity = mgr.create();
     auto zone = entity.assign<ZoneComponent>();
     zone->current =  Zone::UNDEFINED;
@@ -42,7 +47,7 @@ auto makeEffect(EntityManager& mgr) {
     return entity;
 }
 
-auto makeCreature(EntityManager& mgr, Power power,
+inline auto makeCreature(EntityManager& mgr, Power power,
                   Toughness toughness, CreatureType type,
                   CreatureClass classs) {
     auto entity = mgr.create();

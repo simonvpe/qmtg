@@ -105,10 +105,11 @@ auto find(EntityManager& mgr, std::function<bool(const TComponent&)> f) {
     return std::make_tuple(Entity{},component);
 }
 
+////////////////////////////////////////////////////////////////////////////////
 SCENARIO("Spells entering the battlefield should activate "
          "[ENTERS_BATTLEFIELD] triggers",
          "[trigger][system]") {
-    //m::console->set_level(spd::level::debug);
+    m::console->set_level(spd::level::info);
     m::console->debug("Setting up environment");
     m::GameState game;
     // NOTE: Order here matters
@@ -117,7 +118,7 @@ SCENARIO("Spells entering the battlefield should activate "
     game.systems.add<GarbageCollectorSystem>();    
     game.systems.configure();
     auto& mgr = game.entities;
-
+    ////////////////////////////////////////////////////////////////////////////
     GIVEN("an [ENTERS_BATTLEFIELD] trigger parented to an entity") {
         auto effect  = m::makeEffect(mgr);
         auto parent  = mgr.create();
@@ -128,7 +129,7 @@ SCENARIO("Spells entering the battlefield should activate "
             effect,
             parent
         );
-        
+        ////////////////////////////////////////////////////////////////////////
         WHEN("a creature enters the battlefield") {
             auto creature = m::makeCreature(
                 mgr, {2}, {2},
@@ -145,23 +146,27 @@ SCENARIO("Spells entering the battlefield should activate "
                 CHECK( effect.valid() );
                 CHECK( creature == m::parent(effect) );
             };
+            ////////////////////////////////////////////////////////////////////
             THEN("a copy of the triggers effect should go onto the stack "
                  "with its parent set to the creature that entered the "
                  "battlefield" ) {
                 game.systems.update_all(1.0f);
                 checkStackAndParent();
             }
+            ////////////////////////////////////////////////////////////////////
             AND_WHEN("the trigger lifetime is [ONCE]") {
                 trigger->lifetime = m::TriggerLifetime::ONCE;
+                ////////////////////////////////////////////////////////////////
                 THEN("it should also be destroyed after the effect spawned") {
                     game.systems.update_all(1.0f);
                     checkStackAndParent();
                     CHECK( !trigger.valid() );
                 }
             }
+            ////////////////////////////////////////////////////////////////////
             AND_WHEN("the trigger lifetime is [PARENT]") {
                 trigger->lifetime = m::TriggerLifetime::PARENT;
-
+                ////////////////////////////////////////////////////////////////
                 THEN("it should be removed when its parent is destroyed") {
                     game.systems.update_all(1.0f);
                     checkStackAndParent();

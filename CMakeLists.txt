@@ -1,7 +1,22 @@
 cmake_minimum_required(VERSION 3.5)
 
+# Compile command in emacs for convenience
+# make -j12 -C ~/git/qmtg/build testrunner | grep -v "Entering" | grep -v "Leaving" && ~/git/qmtg/build/testrunner -r compact --use-colour no
+
 project (MTG)
 
+# This makes cmake a little quiter
+function(message)
+  list(GET ARGV 0 MessageType)
+  if(MessageType STREQUAL FATAL_ERROR OR
+      MessageType STREQUAL SEND_ERROR OR
+      MessageType STREQUAL WARNING OR
+      MessageType STREQUAL AUTHOR_WARNING)
+    list(REMOVE_AT ARGV 0)
+    _message(${MessageType} "${ARGV}")
+  endif()
+  endfunction()
+  
 add_subdirectory(SFML)
 add_subdirectory(entityx)
 add_subdirectory(googletest)
@@ -19,15 +34,21 @@ include_directories(
 
 add_executable(mtg main.cpp)
 target_link_libraries(mtg LINK_PUBLIC entityx sfml-system sfml-window sfml-graphics)
+set_target_properties(mtg PROPERTIES RULE_MESSAGES OFF)
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
+endif()
 
 add_executable(testrunner
   test/testrunner.cpp
   test/TriggerTest.cpp
-  test/TurnTest.cpp
+  test/5.TurnStructureTest.cpp
   test/GideonAllyOfZendikarTest.cpp
   )
 set(THREADS_PREFER_PTHREAD_FLAG OFF)
 SET_TARGET_PROPERTIES(testrunner PROPERTIES COMPILE_FLAGS "-Wall")
 target_link_libraries(testrunner LINK_PUBLIC
   entityx gtest gtest_main)
+set_target_properties(testrunner PROPERTIES RULE_MESSAGES OFF)
 

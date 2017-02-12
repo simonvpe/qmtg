@@ -3,6 +3,7 @@
 #include "gamestate.hpp"
 #include "common.hpp"
 #include "component.hpp"
+#include "check.hpp"
 
 namespace ex = entityx;
 
@@ -230,20 +231,20 @@ TEST_F(GideonAllyOfZendikarTest, test_ability0_check) {
     });
 
     // Phase good
-    game->phase = Phase::MAIN_1;
+    game->skipPhase(Phase::PRECOMBAT_MAIN);
     zone(gideon)->current = Zone::BATTLEFIELD;
     EXPECT_TRUE(parent(triggerEntity).valid());
     EXPECT_TRUE(check<Timing::SORCERY>(*game));
     EXPECT_TRUE(check<Zone::BATTLEFIELD>(parent(triggerEntity)));
     EXPECT_TRUE(game->check<ManualTriggerComponent>(triggerEntity, ex::Entity{}));
     
-    game->phase = Phase::MAIN_2;
+    game->skipPhase(Phase::POSTCOMBAT_MAIN);
     zone(gideon)->current = Zone::BATTLEFIELD;
     EXPECT_TRUE(game->check<ManualTriggerComponent>(triggerEntity, ex::Entity{}));
 
     
     // Phase bad
-    game->phase = Phase::BEGINNING;
+    game->skipPhase(Phase::BEGINNING);
     zone(gideon)->current = Zone::BATTLEFIELD;
     planeswalker(gideon)->loyalty = {0};
     EXPECT_FALSE(game->check<ManualTriggerComponent>(triggerEntity, ex::Entity{}));
@@ -303,15 +304,15 @@ TEST_F(GideonAllyOfZendikarTest, test_ability1_check) {
     zone(gideon)->current = Zone::BATTLEFIELD;
     
     // Phase good
-    game->phase = Phase::MAIN_1;
+    game->skipPhase(Phase::PRECOMBAT_MAIN);
     EXPECT_TRUE(game->check<ManualTriggerComponent>(trigger, Entity{}));
 
     // Phase good
-    game->phase = Phase::MAIN_2;
+    game->skipPhase(Phase::POSTCOMBAT_MAIN);
     EXPECT_TRUE(game->check<ManualTriggerComponent>(trigger, Entity{}));
     
     // Phase bad
-    game->phase = Phase::BEGINNING;
+    game->skipPhase(Phase::BEGINNING);
     ASSERT_FALSE(game->check<ManualTriggerComponent>(trigger, Entity{}));
 }
 
@@ -361,15 +362,15 @@ TEST_F(GideonAllyOfZendikarTest, test_ability2_check) {
     zone(gideon)->current = Zone::BATTLEFIELD;
     
     // Phase good
-    game->phase = Phase::MAIN_1;
+    game->skipPhase(Phase::PRECOMBAT_MAIN);
     EXPECT_TRUE(game->check<ManualTriggerComponent>(trigger, Entity{}));
 
     // Phase good
-    game->phase = Phase::MAIN_2;
+    game->skipPhase(Phase::POSTCOMBAT_MAIN);
     EXPECT_TRUE(game->check<ManualTriggerComponent>(trigger, Entity{}));
     
     // Phase bad
-    game->phase = Phase::BEGINNING;
+    game->skipPhase(Phase::BEGINNING);
     ASSERT_FALSE(game->check<ManualTriggerComponent>(trigger, Entity{}));
 }
 
