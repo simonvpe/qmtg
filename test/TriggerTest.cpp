@@ -71,10 +71,12 @@ public:
             for(Entity te : m_entities.entities_with_components(trigger)) {
                 if(m::TriggerTiming::ENTERS_BATTLEFIELD != trigger->timing)
                     continue;
+                
                 DBG("Copying effect {}", m::effect(te));
-                auto effectCopy = mgr.create_from_copy(m::effect(te));
-                effectCopy.assign<m::ParentComponent>()->entity = creature;
-                move(effectCopy,m::Zone::STACK);
+                
+                auto effect = mgr.create_from_copy(m::effect(te));
+                m::move(effect,m::Zone::STACK);
+                m::addParent(effect)->entity = creature;
 
                 if(m::TriggerLifetime::ONCE == trigger->lifetime)
                     te.destroy();
@@ -107,7 +109,7 @@ auto find(EntityManager& mgr, std::function<bool(const TComponent&)> f) {
 SCENARIO("Spells entering the battlefield should activate "
          "[ENTERS_BATTLEFIELD] triggers",
          "[trigger][system]") {
-    m::console->set_level(spd::level::debug);
+    //m::console->set_level(spd::level::debug);
     m::console->debug("Setting up environment");
     m::GameState game;
     // NOTE: Order here matters
@@ -118,16 +120,22 @@ SCENARIO("Spells entering the battlefield should activate "
     auto& mgr = game.entities;
 
     GIVEN("an [ENTERS_BATTLEFIELD] trigger parented to an entity") {
-        constexpr auto timing = m::TriggerTiming::ENTERS_BATTLEFIELD;
-        const auto lifetime   = m::TriggerLifetime::UNDEFINED;        
-        auto  effect          = m::makeEffect(mgr);
-        auto  parent          = mgr.create();
-        auto  trigger         = m::makeTrigger(mgr, timing, lifetime, effect, parent);
+        auto effect  = m::makeEffect(mgr);
+        auto parent  = mgr.create();
+        auto trigger = m::makeTrigger(
+            mgr,
+            m::TriggerTiming::ENTERS_BATTLEFIELD,
+            m::TriggerLifetime::UNDEFINED,
+            effect,
+            parent
+        );
         
         WHEN("a creature enters the battlefield") {
-            auto creature = m::makeCreature(mgr, {2}, {2},
-                                m::CreatureType::HUMAN,
-                                m::CreatureClass::SOLDIER);
+            auto creature = m::makeCreature(
+                mgr, {2}, {2},
+                m::CreatureType::HUMAN,
+                m::CreatureClass::SOLDIER
+            );
             move(creature,m::Zone::BATTLEFIELD);
 
             // Helpers

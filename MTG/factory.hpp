@@ -1,5 +1,7 @@
 #pragma once
 #include "common.hpp"
+#include "component.hpp"
+
 namespace MTG {
 using namespace entityx;    
     
@@ -10,6 +12,10 @@ void move(Entity e, Zone z) {
     component->current = z;
 }
 
+auto addParent(Entity child) {
+    return child.assign<ParentComponent>();
+};
+    
 auto makeTrigger(EntityManager&     mgr,
                  TriggerTiming   tt,
                  TriggerLifetime tl,
