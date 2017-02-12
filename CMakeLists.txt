@@ -12,6 +12,7 @@ include_directories(
   ./MTG
   ./SFML
   ./Catch/single_include
+  ./spdlog/include
   ./googletest/googletest/include
   ./googletest/googlemock/include
 )

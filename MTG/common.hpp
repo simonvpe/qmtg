@@ -1,8 +1,15 @@
 #pragma once
+
+#include "entityx/entityx.h"
+#include "spdlog/spdlog.h"
+
 #include <type_traits>
 
-namespace MTG {
+#define DBG(...) MTG::console->debug(__VA_ARGS__)
 
+namespace MTG {
+extern std::shared_ptr<spdlog::logger> console;
+    
 /**
  *    Inherit from this class using CRTP to provide
  *    a unique type for an int metric.
