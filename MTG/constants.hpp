@@ -66,8 +66,8 @@ enum class Step {
     BEGINNING_OF_COMBAT        = (1 << 3),                      
     DECLARE_ATTACKERS          = (1 << 4),
     DECLARE_BLOCKERS           = (1 << 5),
-    COMBAT_DAMAGE              = (1 << 6),
-    FIRST_STRIKE_COMBAT_DAMAGE = (1 << 7),
+    FIRST_STRIKE_COMBAT_DAMAGE = (1 << 6),
+    COMBAT_DAMAGE              = (1 << 7),
     END_OF_COMBAT              = (1 << 8),
     END                        = (1 << 9),                                
     CLEANUP                    = (1 << 10)

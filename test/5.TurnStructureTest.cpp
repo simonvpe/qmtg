@@ -34,8 +34,8 @@ SCENARIO("500. General","") {
     REQUIRE( m::Step::BEGINNING_OF_COMBAT        == m::Step(1 << 3) );
     REQUIRE( m::Step::DECLARE_ATTACKERS          == m::Step(1 << 4) );
     REQUIRE( m::Step::DECLARE_BLOCKERS           == m::Step(1 << 5) );
-    REQUIRE( m::Step::COMBAT_DAMAGE              == m::Step(1 << 6) );
-    REQUIRE( m::Step::FIRST_STRIKE_COMBAT_DAMAGE == m::Step(1 << 7) );
+    REQUIRE( m::Step::FIRST_STRIKE_COMBAT_DAMAGE == m::Step(1 << 6) );
+    REQUIRE( m::Step::COMBAT_DAMAGE              == m::Step(1 << 7) );
     REQUIRE( m::Step::END_OF_COMBAT              == m::Step(1 << 8) );
     REQUIRE( m::Step::END                        == m::Step(1 << 9) );
     REQUIRE( m::Step::CLEANUP                    == m::Step(1 << 10) );
