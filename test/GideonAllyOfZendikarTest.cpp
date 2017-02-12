@@ -12,12 +12,12 @@ namespace MTG {
     
 auto makeGideonAllyOfZendikar(ex::EntityManager& mgr) {
     auto gideon = mgr.create();
-    gideon.assign<ZoneComponent>()->zone                  = Zone::UNDEFINED;
-    gideon.assign<PlaneswalkerComponent>()->loyalty       = {4};
+    gideon.assign<ZoneComponent>(Zone::UNDEFINED);
+    gideon.assign<PlaneswalkerComponent>()->loyalty = Loyalty{4};
     gideon.assign<MechanicComponent>()->summoningSickness = true;
     auto cost = gideon.assign<CardCostComponent>();
-    cost->generic = {2};
-    cost->white   = {2};
+    cost->generic = 2;
+    cost->white   = 2;
     
     // +1
     // ----------------------------------------------------------------------
@@ -94,7 +94,7 @@ auto makeGideonAllyOfZendikar(ex::EntityManager& mgr) {
             creature->toughness = {2};
             creature->type      = CreatureType::KNIGHT;
             creature->classs    = CreatureClass::ALLY | CreatureClass::TOKEN;
-            card.assign<ZoneComponent>()->zone = Zone::BATTLEFIELD;
+            card.assign<ZoneComponent>()->current = Zone::BATTLEFIELD;
             card.assign<MechanicComponent>()->summoningSickness = true;
         };
     }        
@@ -123,7 +123,7 @@ auto makeGideonAllyOfZendikar(ex::EntityManager& mgr) {
             auto& loyalty = planeswalker(gideon)->loyalty;
             loyalty -= 4;
             if(loyalty <= 0) {
-                zone(gideon)->zone = Zone::GRAVEYARD;
+                zone(gideon)->current = Zone::GRAVEYARD;
             }
         };
 
@@ -231,20 +231,20 @@ TEST_F(GideonAllyOfZendikarTest, test_ability0_check) {
 
     // Phase good
     game->phase = Phase::MAIN_1;
-    zone(gideon)->zone = Zone::BATTLEFIELD;
+    zone(gideon)->current = Zone::BATTLEFIELD;
     EXPECT_TRUE(parent(triggerEntity).valid());
     EXPECT_TRUE(check<Timing::SORCERY>(*game));
     EXPECT_TRUE(check<Zone::BATTLEFIELD>(parent(triggerEntity)));
     EXPECT_TRUE(game->check<ManualTriggerComponent>(triggerEntity, ex::Entity{}));
     
     game->phase = Phase::MAIN_2;
-    zone(gideon)->zone = Zone::BATTLEFIELD;
+    zone(gideon)->current = Zone::BATTLEFIELD;
     EXPECT_TRUE(game->check<ManualTriggerComponent>(triggerEntity, ex::Entity{}));
 
     
     // Phase bad
     game->phase = Phase::BEGINNING;
-    zone(gideon)->zone = Zone::BATTLEFIELD;
+    zone(gideon)->current = Zone::BATTLEFIELD;
     planeswalker(gideon)->loyalty = {0};
     EXPECT_FALSE(game->check<ManualTriggerComponent>(triggerEntity, ex::Entity{}));
 }
@@ -256,10 +256,10 @@ TEST_F(GideonAllyOfZendikarTest, test_ability_0_pay) {
     });
 
     // Survive and get loyalty
-    zone(gideon)->zone            = Zone::BATTLEFIELD;
+    zone(gideon)->current         = Zone::BATTLEFIELD;
     planeswalker(gideon)->loyalty = {2};
     game->pay<ManualTriggerComponent>(triggerEntity, ex::Entity{});
-    EXPECT_EQ( Zone::BATTLEFIELD, zone(gideon)->zone );
+    EXPECT_EQ( Zone::BATTLEFIELD, zone(gideon)->current );
     EXPECT_EQ( Loyalty{3}, planeswalker(gideon)->loyalty );
 }
 
@@ -300,7 +300,7 @@ TEST_F(GideonAllyOfZendikarTest, test_ability1_check) {
     });
     ASSERT_TRUE(trigger.valid());
     ASSERT_TRUE(parent(trigger).valid());
-    zone(gideon)->zone = Zone::BATTLEFIELD;
+    zone(gideon)->current = Zone::BATTLEFIELD;
     
     // Phase good
     game->phase = Phase::MAIN_1;
@@ -358,7 +358,7 @@ TEST_F(GideonAllyOfZendikarTest, test_ability2_check) {
     auto trigger = first<ManualTriggerComponent>(mgr, [](auto& component) {
         return test(component.properties & ManualTriggerProperties::CARD_SLOT_2);
     });
-    zone(gideon)->zone = Zone::BATTLEFIELD;
+    zone(gideon)->current = Zone::BATTLEFIELD;
     
     // Phase good
     game->phase = Phase::MAIN_1;

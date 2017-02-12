@@ -7,7 +7,8 @@ enum class Zone {
     BATTLEFIELD  = (1 << 1),
     LIBRARY      = (1 << 2),
     GRAVEYARD    = (1 << 3),
-    COMMAND      = (1 << 4)
+    COMMAND      = (1 << 4),
+    STACK        = (1 << 5)
 };
     
 enum class CreatureType {
@@ -30,9 +31,21 @@ enum class ManualTriggerProperties {
     CARD_SLOT_2 = (1 << 2)
 };
 
+enum class TriggerTiming {
+    UNDEFINED          = 0,
+    ENTERS_BATTLEFIELD = (1 << 0)
+};
+    
 enum class Timing {
     UNDEFINED = 0,
     INSTANT   = (1 << 0),
     SORCERY   = (1 << 1)
+};
+
+enum class TriggerLifetime {
+    UNDEFINED   = 0,
+    END_OF_TURN = (1 << 0),
+    ONCE        = (1 << 1),
+    PARENT      = (1 << 2)
 };
 } // namespace MTG

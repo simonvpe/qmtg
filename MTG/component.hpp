@@ -15,25 +15,26 @@ struct CardCostComponent;
 struct CreatureComponent;
 struct EmblemComponent;
 struct MechanicComponent;
-struct ManualTriggerComponent;
-struct EndOfTurnTriggerComponent;
-struct EnterBattlefieldTriggerComponent;
+struct TriggerComponent;    
+struct ManualTriggerComponent; // deprecated
+struct EndOfTurnTriggerComponent; // deprecated
+struct EnterBattlefieldTriggerComponent; // deprecated
 struct BuffComponent;
     
 // Metrics used in different components
-struct Loyalty   : Metric<Loyalty>   {};
-struct Mana      : Metric<Mana>      {};
-struct Power     : Metric<Power>     {};    
-struct Toughness : Metric<Toughness> {};
+using Loyalty   = int;
+using Mana      = int;
+using Power     = int;
+using Toughness = int;
 
 // Convenience functions
-auto parent(Entity entity);    
-auto planeswalker(Entity entity);
-auto zone(Entity entity);
+auto& parent(Entity entity);    
+auto  planeswalker(Entity entity);
+auto  zone(Entity entity);
 template<Zone Z> auto check(Entity entity);
-auto creature(Entity entity);    
-auto mechanic(Entity entity);    
-auto test(ManualTriggerProperties a);
+auto  creature(Entity entity);    
+auto  mechanic(Entity entity);    
+auto  test(ManualTriggerProperties a);
     
 ////////////////////////////////////////////////////////////////////////////////
 // Implementations follow
@@ -41,7 +42,11 @@ auto test(ManualTriggerProperties a);
     
 struct PlaneswalkerComponent { Loyalty loyalty; };
 struct ParentComponent       { Entity entity; };
-struct ZoneComponent         { Zone zone; };
+struct ZoneComponent         {
+    ZoneComponent(const Zone &z = Zone{}) : current(z), previous(z) {}
+    Zone current;
+    Zone previous;
+};
 struct CardCostComponent {
     Mana black;
     Mana blue;
@@ -58,8 +63,6 @@ struct CreatureComponent {
 };
 struct EmblemComponent   { };
 struct MechanicComponent { bool summoningSickness; };
-    
-// Trigger
     
 using TriggerCheck = std::function<
     bool(GameState&, Entity self, Entity target)
@@ -88,6 +91,13 @@ struct EnterBattlefieldTriggerComponent {
     TriggerAction action;
 };
 
+struct TriggerComponent  {
+    TriggerTiming   timing;
+    TriggerLifetime lifetime;
+    Entity          effect;
+    Entity          parent;
+}; // replaces deprecated triggers
+    
 // Effect
 
 struct BuffComponent {
@@ -97,31 +107,36 @@ struct BuffComponent {
 };
 
 
-auto parent(Entity entity) {
+inline auto& parent(Entity entity) {
     return entity.component<ParentComponent>()->entity;
 }
-auto planeswalker(Entity entity) {
+
+inline auto& effect(Entity entity) {
+    return entity.component<TriggerComponent>()->effect;
+}
+    
+inline auto planeswalker(Entity entity) {
     return entity.component<PlaneswalkerComponent>();
 }
     
-auto zone(Entity entity) {
+inline auto zone(Entity entity) {
     return entity.component<ZoneComponent>();
 }
     
 template<Zone Z>
-auto check(Entity entity) {
-    return Z == zone(entity)->zone;
+inline auto check(Entity entity) {
+    return Z == zone(entity)->current;
 }
     
-auto creature(Entity entity) {
+inline auto creature(Entity entity) {
     return entity.component<CreatureComponent>();
 }
     
-auto mechanic(Entity entity) {
+inline auto mechanic(Entity entity) {
     return entity.component<MechanicComponent>();
 }
     
-auto test(ManualTriggerProperties a) {
+inline auto test(ManualTriggerProperties a) {
     using T = std::underlying_type_t<ManualTriggerProperties>;
     return (T)a != 0;
 }

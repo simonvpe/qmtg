@@ -9,21 +9,26 @@ namespace MTG {
  *    
  *    @tparam Super the superclass
  **/
-template<typename Super>
-struct Metric {
-    Metric(int v = 0) : value{v} {}
+template<typename Super> class Metric {
+public:
+    Metric(decltype(Super::value) val = 0) { v() = val; }
     Metric(const Metric&) = default;
-    bool    operator==(const Metric& rhs) const { return value == rhs.value; }
-    bool    operator!=(const Metric& rhs) const { return value != rhs.value; }
-    bool    operator> (int rhs)           const { return value > rhs; }
-    bool    operator< (int rhs)           const { return value < rhs; }
-    bool    operator<=(int rhs)           const { return value <= rhs; }
-    bool    operator>=(int rhs)           const { return value >= rhs; }
-    Metric  operator- (int rhs)           const { return { value - rhs }; }
-    Metric  operator+ (int rhs)           const { return { value + rhs }; }
-    Metric &operator-=(int rhs)                 { value -= rhs; return *this; }
-    Metric &operator+=(int rhs)                 { value += rhs; return *this; }
-    int value;    
+    bool    operator==(const Metric& rhs) const { return v() == rhs.v(); }
+    bool    operator!=(const Metric& rhs) const { return v() != rhs.v(); }
+    bool    operator> (int rhs)           const { return v() > rhs; }
+    bool    operator< (int rhs)           const { return v() < rhs; }
+    bool    operator<=(int rhs)           const { return v() <= rhs; }
+    bool    operator>=(int rhs)           const { return v() >= rhs; }
+    Metric  operator- (int rhs)           const { return { v() - rhs }; }
+    Metric  operator+ (int rhs)           const { return { v() + rhs }; }
+    Metric &operator-=(int rhs)                 { v() -= rhs; return *this; }
+    Metric &operator+=(int rhs)                 { v() += rhs; return *this; }
+    Metric &operator= (int rhs)                 { v()  = rhs; return *this; }
+private:
+    auto& v()               { return as_super().value; }
+    auto  v()         const { return as_super().value; }
+    Super &as_super()       { return *reinterpret_cast<Super*>(this); }
+    const Super &as_super() const { return *reinterpret_cast<const Super*>(this); }
 };
 
 /**
