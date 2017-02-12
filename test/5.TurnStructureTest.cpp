@@ -20,24 +20,25 @@ SCENARIO("500. General","") {
       combat, and ending phases are further broken down into steps, which
       proceed in order.
     */
-    REQUIRE( m::Phase::UNDEFINED          == m::Phase(0) );
-    REQUIRE( m::Phase::BEGINNING          == m::Phase(1 << 0) );
-    REQUIRE( m::Phase::PRECOMBAT_MAIN     == m::Phase(1 << 1) );
-    REQUIRE( m::Phase::COMBAT             == m::Phase(1 << 2) );
-    REQUIRE( m::Phase::POSTCOMBAT_MAIN    == m::Phase(1 << 3) );
-    REQUIRE( m::Phase::ENDING             == m::Phase(1 << 4) );
+    REQUIRE( m::Phase::UNDEFINED                 == m::Phase(0) );
+    REQUIRE( m::Phase::BEGINNING                 == m::Phase(1 << 0) );
+    REQUIRE( m::Phase::PRECOMBAT_MAIN            == m::Phase(1 << 1) );
+    REQUIRE( m::Phase::COMBAT                    == m::Phase(1 << 2) );
+    REQUIRE( m::Phase::POSTCOMBAT_MAIN           == m::Phase(1 << 3) );
+    REQUIRE( m::Phase::ENDING                    == m::Phase(1 << 4) );
     
-    REQUIRE( m::Step::UNDEFINED           == m::Step(0) );
-    REQUIRE( m::Step::UNTAP               == m::Step(1 << 0) );
-    REQUIRE( m::Step::UPKEEP              == m::Step(1 << 1) );
-    REQUIRE( m::Step::DRAW                == m::Step(1 << 2) );
-    REQUIRE( m::Step::BEGINNING_OF_COMBAT == m::Step(1 << 3) );
-    REQUIRE( m::Step::DECLARE_ATTACKERS   == m::Step(1 << 4) );
-    REQUIRE( m::Step::DECLARE_BLOCKERS    == m::Step(1 << 5) );
-    REQUIRE( m::Step::COMBAT_DAMAGE       == m::Step(1 << 6) );
-    REQUIRE( m::Step::END_OF_COMBAT       == m::Step(1 << 7) );
-    REQUIRE( m::Step::ENDING              == m::Step(1 << 8) );
-    REQUIRE( m::Step::END                 == m::Step(1 << 9) );
+    REQUIRE( m::Step::UNDEFINED                  == m::Step(0) );
+    REQUIRE( m::Step::UNTAP                      == m::Step(1 << 0) );
+    REQUIRE( m::Step::UPKEEP                     == m::Step(1 << 1) );
+    REQUIRE( m::Step::DRAW                       == m::Step(1 << 2) );
+    REQUIRE( m::Step::BEGINNING_OF_COMBAT        == m::Step(1 << 3) );
+    REQUIRE( m::Step::DECLARE_ATTACKERS          == m::Step(1 << 4) );
+    REQUIRE( m::Step::DECLARE_BLOCKERS           == m::Step(1 << 5) );
+    REQUIRE( m::Step::COMBAT_DAMAGE              == m::Step(1 << 6) );
+    REQUIRE( m::Step::FIRST_STRIKE_COMBAT_DAMAGE == m::Step(1 << 7) );
+    REQUIRE( m::Step::END_OF_COMBAT              == m::Step(1 << 8) );
+    REQUIRE( m::Step::END                        == m::Step(1 << 9) );
+    REQUIRE( m::Step::CLEANUP                    == m::Step(1 << 10) );
 
     
     /*
@@ -56,7 +57,7 @@ SCENARIO("500. General","") {
         game.setActivePlayer(active);
         REQUIRE( game.stack().empty() );
         
-        GIVEN("a game in the beginning phase") {
+        GIVEN("current phase is beginning") {
             game.skipPhase(m::Phase::BEGINNING);
 
             GIVEN("current step is upkeep") {
@@ -87,7 +88,7 @@ SCENARIO("500. General","") {
                 }
             }
         }
-        GIVEN("a game in the precombat main phase") {
+        GIVEN("current phase is precombat main") {
             game.skipPhase(m::Phase::PRECOMBAT_MAIN);
             
             WHEN("all players pass") {
@@ -100,7 +101,7 @@ SCENARIO("500. General","") {
                 }
             }
         }
-        GIVEN("a game in the combat phase") {
+        GIVEN("current phase is combat") {
             game.skipPhase(m::Phase::COMBAT);
         
             GIVEN("current step is beginning of combat") {
@@ -154,6 +155,45 @@ SCENARIO("500. General","") {
                         CHECK( m::Phase::COMBAT       == game.phase() );
                         CHECK( m::Step::END_OF_COMBAT == game.step() );
                     }
+                }
+            }
+            GIVEN("current step is end of combat") {
+                game.skipStep(m::Step::END_OF_COMBAT);
+
+                WHEN("all players pass") {
+                    game.pass(active);
+                    game.pass(inactive);
+
+                    THEN("the postcombat main phase should start") {
+                        CHECK( m::Phase::POSTCOMBAT_MAIN == game.phase() );
+                        CHECK( m::Step::UNDEFINED        == game.step() );
+                    }
+                }
+            }
+        }
+        GIVEN("current phase is postcombat main") {
+            game.skipPhase(m::Phase::POSTCOMBAT_MAIN);
+
+            WHEN("all players pass") {
+                game.pass(active);
+                game.pass(inactive);
+
+                THEN("the end step should start") {
+                    CHECK( m::Phase::ENDING == game.phase() );
+                    CHECK( m::Step::END     == game.step() );
+                }
+            }
+        }
+        GIVEN("current phase is ending") {
+            game.skipPhase(m::Phase::ENDING);
+
+            WHEN("all players pass") {
+                game.pass(active);
+                game.pass(inactive);
+
+                THEN("the cleanup step should start") {
+                    CHECK( m::Phase::ENDING  == game.phase() );
+                    CHECK( m::Step::CLEANUP  == game.step() );
                 }
             }
         }

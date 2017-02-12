@@ -59,16 +59,17 @@ enum class Phase {
 };
 
 enum class Step {
-    UNDEFINED           = 0,
-    UNTAP               = (1 << 0),
-    UPKEEP              = (1 << 1),
-    DRAW                = (1 << 2),
-    BEGINNING_OF_COMBAT = (1 << 3),                      
-    DECLARE_ATTACKERS   = (1 << 4),
-    DECLARE_BLOCKERS    = (1 << 5),
-    COMBAT_DAMAGE       = (1 << 6),
-    END_OF_COMBAT       = (1 << 7),
-    ENDING              = (1 << 8),                                
-    END                 = (1 << 9)
+    UNDEFINED                  = 0,
+    UNTAP                      = (1 << 0),
+    UPKEEP                     = (1 << 1),
+    DRAW                       = (1 << 2),
+    BEGINNING_OF_COMBAT        = (1 << 3),                      
+    DECLARE_ATTACKERS          = (1 << 4),
+    DECLARE_BLOCKERS           = (1 << 5),
+    COMBAT_DAMAGE              = (1 << 6),
+    FIRST_STRIKE_COMBAT_DAMAGE = (1 << 7),
+    END_OF_COMBAT              = (1 << 8),
+    END                        = (1 << 9),                                
+    CLEANUP                    = (1 << 10)
 };         
 } // namespace MTG
