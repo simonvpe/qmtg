@@ -21,18 +21,17 @@ struct GameState : public EntityX {
     void pay(Entity trigger, Entity target = {});
 
     void start(Entity player1, Entity player2) {
-        m_players.reserve(2);
-        m_players.push_back(player1);
-        m_players.push_back(player2);
+        m_player1 = player1;
+        m_player2 = player2;
     }
 
     void pass(Entity player) {
-        
+        if(m_player1 == player) { m_player1Passed = true; }
+        if(m_player2 == player) { m_player2Passed = true; }
     }
-    
+
     void skipPhase(Phase phase) {
         m_phase = phase;
-        m_step  = Step::UNDEFINED;
     }
 
     void skipStep(Step step) {
@@ -43,7 +42,7 @@ struct GameState : public EntityX {
         m_activePlayer = player;
     }
 
-    std::vector<Entity> stack() {
+    const std::vector<Entity> stack() {
         std::vector<Entity> s;
         ComponentHandle<ZoneComponent> zone;
         for(Entity e : entities.entities_with_components(zone)) {
@@ -54,13 +53,75 @@ struct GameState : public EntityX {
     }
 
     Phase phase() const { return m_phase; }
+    
     Step  step()  const { return m_step; }
     
-private:
-    Phase               m_phase;
-    Step                m_step;
-    std::vector<Entity> m_players;
-    Entity              m_activePlayer;
+    void nextStep() {
+        switch(m_phase) {
+            
+            // Beginning phase
+        case Phase::BEGINNING:
+            switch(m_step) {
+            case Step::UNTAP:
+                m_step = Step::UPKEEP;
+                break;
+            case Step::UPKEEP:
+                m_step = Step::DRAW;
+                break;
+            case Step::DRAW:
+                m_phase = Phase::PRECOMBAT_MAIN;
+                m_step  = Step::UNDEFINED;
+                break;
+            }
+            break;
+            // Precombat main phase
+        case Phase::PRECOMBAT_MAIN:
+            m_phase = Phase::COMBAT;
+            m_step  = Step::BEGINNING_OF_COMBAT;
+            break;
+            
+            // Combat phase
+        case Phase::COMBAT:
+            switch(m_step) {
+            case Step::BEGINNING_OF_COMBAT:
+                m_step = Step::DECLARE_ATTACKERS;
+                break;
+            case Step::DECLARE_ATTACKERS:
+                m_step = Step::DECLARE_BLOCKERS;
+                break;
+            case Step::DECLARE_BLOCKERS:
+                m_step = Step::COMBAT_DAMAGE;
+                break;
+            case Step::FIRST_STRIKE_COMBAT_DAMAGE:
+                m_step = Step::COMBAT_DAMAGE;
+                break;
+            case Step::COMBAT_DAMAGE:
+                m_step = Step::END_OF_COMBAT;
+                break;
+            case Step::END_OF_COMBAT:
+                m_phase = Phase::POSTCOMBAT_MAIN;
+                m_step  = Step::UNDEFINED;
+                break;
+            }
+            break;
+            
+            // Postcombat main phase
+        case Phase::POSTCOMBAT_MAIN:
+            m_phase = Phase::ENDING;
+            m_step =  Step::END;
+            break;
+
+        case Phase::ENDING:
+            m_step = Step::CLEANUP;
+            break;
+        }
+    }
+    
+    Phase  m_phase;
+    Step   m_step;
+    Entity m_player1,m_player2;
+    bool   m_player1Passed, m_player2Passed;
+    Entity m_activePlayer;
 };
 
 /**
