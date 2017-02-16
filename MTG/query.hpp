@@ -49,22 +49,27 @@ private:
     CardHandle card;
 };
 
-namespace player {
-    inline bool isActive(const PlayerHandle& player) {
+class PlayerQuery {
+public:
+    PlayerQuery(PlayerHandle handle) : player{handle} {}
+    
+    inline bool isActive() const {
         return player->flags[Player::ACTIVE];
     }
 
-    inline void setActive(PlayerHandle& player, bool value = true) {
+    inline void setActive(bool value = true) {
         player->flags[Player::ACTIVE] = value;
     }
 
-    inline bool isReady(const PlayerHandle& player) {
+    inline bool isReady() const {
         return player->flags[Player::READY];
     }
         
-    inline void setReady(PlayerHandle& player, bool value = true) {
+    inline void setReady(bool value = true) {
         player->flags[Player::READY] = value;
     }
-}
+private:
+    PlayerHandle player;
+};
     
 }

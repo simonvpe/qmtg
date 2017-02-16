@@ -3,7 +3,6 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace m = MTG;
-namespace p = MTG::player;
 
 bool operator==(const m::CardHandle& lhs, const std::string& rhs) {
     return lhs->name == rhs;
@@ -38,7 +37,7 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
         WHEN("all players are connected and ready") {
             for(auto player : { player1, player2 }) {
                 ctx.connect(player);
-                p::setReady(player);
+                m::PlayerQuery{player}.setReady();
             }
             ctx.advance();
             THEN("the game should start") {
@@ -49,7 +48,7 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
             for(auto player : { player1, player2 }) {
                 ctx.connect(player);
                 ctx.setDeck(player,deck);
-                p::setReady(player);
+                m::PlayerQuery{player}.setReady();
             }
             game.setStarted();
             ctx.advance();
@@ -93,7 +92,7 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
             for(auto player : {player1,player2}) {
                 ctx.connect(player);
                 ctx.setDeck(player, deck);
-                p::setReady(player);
+                m::PlayerQuery{player}.setReady();
             }
             //ctx.setMulligan(player1, true);
             //ctx.setMulligan(player2, false);
