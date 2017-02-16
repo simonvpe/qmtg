@@ -3,7 +3,6 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace m = MTG;
-namespace g = MTG::game;
 namespace p = MTG::player;
 namespace c = MTG::card;
 
@@ -15,16 +14,17 @@ bool operator==(const m::CardHandle& lhs, const std::string& rhs) {
 SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
     GIVEN("a newly started match of two players, each with a deck of cards") {
         m::Context ctx;
-        auto game = ctx.makeGame();
-        auto player1 = ctx.makePlayer(game);
-        auto player2 = ctx.makePlayer(game);
+        auto gameHandle = ctx.makeGame();
+        auto player1 = ctx.makePlayer(gameHandle);
+        auto player2 = ctx.makePlayer(gameHandle);
+        auto game = m::GameQuery{gameHandle};
         auto deck = std::vector<const char*>(60, "dummy");
         
         WHEN("not all players are connected") {
             ctx.connect(player1);
             ctx.advance();
             THEN("the game should not to start") {
-                CHECK( false == g::isStarted(game) );
+                CHECK( false == game.isStarted() );
             }
         }
         WHEN("all players are connected but not ready") {
@@ -33,7 +33,7 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
             }
             ctx.advance();
             THEN("the game should not start") {
-                CHECK( false == g::isStarted(game) );
+                CHECK( false == game.isStarted() );
             }
         }
         WHEN("all players are connected and ready") {
@@ -43,7 +43,7 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
             }
             ctx.advance();
             THEN("the game should start") {
-                CHECK( true == g::isStarted(game) );
+                CHECK( true == game.isStarted() );
             }
         }
         WHEN("the game have just started (all players connected and ready)") {
@@ -52,7 +52,7 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
                 ctx.setDeck(player,deck);
                 p::setReady(player);
             }
-            g::setStarted(game);
+            game.setStarted();
             ctx.advance();
             
             THEN("each players decks have been shuffled and become "

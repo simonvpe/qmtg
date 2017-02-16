@@ -97,7 +97,7 @@ namespace MTG {
         auto getPlayers(GameHandle game) {
             MutablePlayerVector players;
             players.reserve(2);
-            game::eachPlayer(entities, game, [&](auto playerHandle) {
+            GameQuery{game}.eachPlayer(entities, [&](auto playerHandle) {
                 players.push_back(playerHandle);
             });
             return (PlayerVector)players;            
