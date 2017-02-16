@@ -37,10 +37,10 @@ namespace MTG {
         auto makePlayer(GameHandle& game) {
             auto player = PlayerHandle{entities.create()};
             player.assign<Player>();
-            player->game             = game;
-            player->flags            = 0;
-            player->life             = 20;
-            player->startingHandSize = 7;
+            auto query = PlayerQuery{player};
+            query.setGame(game);
+            query.setLife(20);
+            query.setStartingHandSize(7);
             return player;
         }        
 
@@ -63,14 +63,18 @@ namespace MTG {
 
         void setDeck(PlayerHandle player, gsl::span<const char*> cards) {
             eachCard(player,[](auto card) { card.destroy(); });
+            auto playerQuery = PlayerQuery{player};
+
             std::vector<const char*> mcards(cards.begin(), cards.end());
             m_random->shuffle(mcards);
+            
             for(auto i = 0 ; i < mcards.size() ; ++i) {
                 auto card = makeCard(player,mcards[i]);
-                auto zone = (i < player->startingHandSize)
+                auto cardQuery = CardQuery{card};
+                auto zone = (i < playerQuery.getStartingHandSize())
                     ? Card::HAND
                     : Card::LIBRARY;
-                CardQuery{card}.setZone(zone);
+                cardQuery.setZone(zone);
             }
         }
 

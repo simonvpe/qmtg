@@ -8,13 +8,14 @@ using namespace entityx;
 struct Socket {
 };
 
-struct Player {
+class Player {
     enum Flags { ACTIVE = 0, READY = 1, MULLIGAN = 2 };
     GameHandle game;
     Entity     other;
     bitset<2>  flags;
     int        life;
     int        startingHandSize;
+    friend class PlayerQuery;
 };
 
 struct PlayerHandle : public Entity {
