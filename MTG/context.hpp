@@ -10,6 +10,7 @@
 #include <player.hpp>
 #include <card.hpp>
 #include <random.hpp>
+#include <systems.hpp>
 
 namespace MTG {
     namespace ex = entityx;

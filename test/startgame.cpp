@@ -22,12 +22,30 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
         
         WHEN("not all players are connected") {
             ctx.connect(player1);
-            g::setStarted(game);
             ctx.advance();
-            THEN("the game should refuse to start") {
+            THEN("the game should not to start") {
                 CHECK( false == g::isStarted(game) );
             }
-        }        
+        }
+        WHEN("all players are connected but not ready") {
+            for(auto player : { player1, player2 }) {
+                ctx.connect(player);
+            }
+            ctx.advance();
+            THEN("the game should not start") {
+                CHECK( false == g::isStarted(game) );
+            }
+        }
+        WHEN("all players are connected and ready") {
+            for(auto player : { player1, player2 }) {
+                ctx.connect(player);
+                p::setReady(player);
+            }
+            ctx.advance();
+            THEN("the game should start") {
+                CHECK( true == g::isStarted(game) );
+            }
+        }
         WHEN("the game have just started (all players connected and ready)") {
             for(auto player : { player1, player2 }) {
                 ctx.connect(player);
