@@ -164,7 +164,7 @@ namespace MTG {
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
-        inline auto makePlayer(GameHandle& game) {
+        auto makePlayer(GameHandle& game) {
             auto player = PlayerHandle{entities.create()};
             player.assign<Player>();
             player->game             = game;
@@ -176,7 +176,7 @@ namespace MTG {
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
-        inline auto makeCard(PlayerHandle player, std::string name) {
+        auto makeCard(PlayerHandle player, std::string name) {
             auto entity = CardHandle{entities.create()};
             auto card   = entity.assign<Card>();
             card->player = player;
