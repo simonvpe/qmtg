@@ -5,6 +5,10 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace m = MTG;
+namespace g = MTG::game;
+namespace p = MTG::player;
+namespace c = MTG::card;
+
 bool operator==(const m::CardHandle& lhs, const std::string& rhs) {
     return lhs->name == rhs;
 }
@@ -18,12 +22,23 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
         auto player2 = ctx.makePlayer(game);
         auto deck = std::vector<const char*>(60, "dummy");
         
+        WHEN("not all players are connected") {
+            ctx.connect(player1);
+            g::setStarted(game);
+            ctx.advance();
+            THEN("the game should refuse to start") {
+                CHECK( false == g::isStarted(game) );
+            }
+        }        
         WHEN("the game have just started (all players connected and ready)") {
             for(auto player : { player1, player2 }) {
                 ctx.connect(player);
                 ctx.setDeck(player,deck);
-                m::player::setReady(player);
+                p::setReady(player);
             }
+            g::setStarted(game);
+            ctx.advance();
+            
             THEN("each players decks have been shuffled and become "
                  "their libraries") {
                 for(auto player : { player1, player2 }) {
@@ -63,7 +78,7 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
             for(auto player : {player1,player2}) {
                 ctx.connect(player);
                 ctx.setDeck(player, deck);
-                m::player::setReady(player);
+                p::setReady(player);
             }
             //ctx.setMulligan(player1, true);
             //ctx.setMulligan(player2, false);
