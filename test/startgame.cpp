@@ -1,7 +1,5 @@
-#include "catch.hpp"
-#include "common.hpp"
-#include <random>
-#include <set>
+#include <catch.hpp>
+#include <context.hpp>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace m = MTG;
