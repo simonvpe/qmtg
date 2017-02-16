@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
 # Compile command in emacs for convenience
-# make -j12 -C ~/git/qmtg/build testrunner | grep -v "Entering" | grep -v "Leaving" && ~/git/qmtg/build/testrunner -r compact --use-colour no
 
 project (MTG)
 
@@ -43,7 +42,6 @@ endif()
 
 add_executable(testrunner
   test/testrunner.cpp
-  test/players.cpp
   test/startgame.cpp
   )
 set(THREADS_PREFER_PTHREAD_FLAG OFF)
