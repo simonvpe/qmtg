@@ -17,13 +17,4 @@ struct GameHandle : public Entity {
     const auto operator->() const { return component<const Game>(); }
 };
 
-namespace game {
-    bool isStarted(const GameHandle game) {
-        return game->flags[Game::STARTED];
-    }
-    void setStarted(GameHandle game, bool value = true) {
-        game->flags[Game::STARTED] = value;
-    }
-}
-    
 }

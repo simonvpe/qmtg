@@ -28,22 +28,4 @@ struct CardHandle : public Entity {
 using CardVector = const std::vector<CardHandle>;
 using MutableCardVector = std::vector<CardHandle>;
     
-namespace card {
-    inline void setZone(CardHandle card, Card::Zone zone) {
-        card->zone = zone;
-    }
-
-    inline Card::Zone getZone(const CardHandle& card) {
-        return card->zone;
-    }
-
-    inline bool isInHand(const CardHandle &card) {
-        return card->zone == Card::HAND;
-    }
-
-    inline bool isInLibrary(const CardHandle &card) {
-        return card->zone == Card::LIBRARY;
-    }
-}
-    
 }
