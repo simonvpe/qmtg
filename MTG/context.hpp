@@ -66,11 +66,11 @@ namespace MTG {
             std::vector<const char*> mcards(cards.begin(), cards.end());
             m_random->shuffle(mcards);
             for(auto i = 0 ; i < mcards.size() ; ++i) {
-                auto c = makeCard(player,mcards[i]);
+                auto card = makeCard(player,mcards[i]);
                 auto zone = (i < player->startingHandSize)
                     ? Card::HAND
                     : Card::LIBRARY;
-                card::setZone(c, zone);
+                CardQuery{card}.setZone(zone);
             }
         }
 
@@ -78,7 +78,7 @@ namespace MTG {
             MutableCardVector cards;
             cards.reserve(60);
             eachCard(player, [&](CardHandle card) {
-                if(card::isInLibrary(card)) cards.push_back(card);
+                if(CardQuery{card}.isInLibrary()) cards.push_back(card);
             });
             return (CardVector)cards;
         }
@@ -87,7 +87,7 @@ namespace MTG {
             MutableCardVector cards;
             cards.reserve(7);
             eachCard(player,[&](CardHandle card) {
-                if(card::isInHand(card)) {
+                if(CardQuery{card}.isInHand()) {
                     cards.push_back(card);
                 }
             });

@@ -1,6 +1,7 @@
 #pragma once
 #include <player.hpp>
 #include <game.hpp>
+#include <card.hpp>
 
 namespace MTG {
 
@@ -25,23 +26,28 @@ private:
     GameHandle game;
 };
 
-namespace card {
-    inline void setZone(CardHandle card, Card::Zone zone) {
+class CardQuery {
+public:
+    CardQuery(CardHandle handle) : card{handle} {}
+    
+    void setZone(Card::Zone zone) {
         card->zone = zone;
     }
 
-    inline Card::Zone getZone(const CardHandle& card) {
+    Card::Zone getZone() const {
         return card->zone;
     }
 
-    inline bool isInHand(const CardHandle &card) {
+    bool isInHand() {
         return card->zone == Card::HAND;
     }
 
-    inline bool isInLibrary(const CardHandle &card) {
+    bool isInLibrary() const {
         return card->zone == Card::LIBRARY;
     }
-}
+private:
+    CardHandle card;
+};
 
 namespace player {
     inline bool isActive(const PlayerHandle& player) {

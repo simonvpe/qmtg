@@ -4,7 +4,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 namespace m = MTG;
 namespace p = MTG::player;
-namespace c = MTG::card;
 
 bool operator==(const m::CardHandle& lhs, const std::string& rhs) {
     return lhs->name == rhs;
