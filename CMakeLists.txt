@@ -17,19 +17,20 @@ function(message)
   endif()
   endfunction()
   
-add_subdirectory(SFML)
-add_subdirectory(entityx)
-add_subdirectory(googletest)
+#add_subdirectory(SFML)
+#add_subdirectory(entityx)
+#add_subdirectory(googletest)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
 include_directories(
-  ./entityx/entityx
+#  ./entityx/entityx
   ./MTG
-  ./SFML
+#  ./SFML
   ./Catch/single_include
   ./spdlog/include
-  ./googletest/googletest/include
-  ./googletest/googlemock/include
+  ./GSL/include
+#  ./googletest/googletest/include
+#  ./googletest/googlemock/include
 )
 
 add_executable(mtg main.cpp)
@@ -42,13 +43,10 @@ endif()
 
 add_executable(testrunner
   test/testrunner.cpp
-  test/TriggerTest.cpp
-  test/5.TurnStructureTest.cpp
-  test/GideonAllyOfZendikarTest.cpp
+  test/players.cpp
+  test/startgame.cpp
   )
 set(THREADS_PREFER_PTHREAD_FLAG OFF)
 SET_TARGET_PROPERTIES(testrunner PROPERTIES COMPILE_FLAGS "-Wall")
-target_link_libraries(testrunner LINK_PUBLIC
-  entityx gtest gtest_main)
+target_link_libraries(testrunner LINK_PUBLIC pthread entityx)
 set_target_properties(testrunner PROPERTIES RULE_MESSAGES OFF)
-
