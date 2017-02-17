@@ -1,4 +1,4 @@
-# qmtg
+# qmtg (preliminary name)
 
 A fast MTG simulator
 
