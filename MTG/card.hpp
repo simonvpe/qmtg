@@ -6,7 +6,9 @@
 namespace MTG {
 using namespace entityx;
     
-struct Card {
+class Card {
+    friend class CardHandle;
+private:
     enum { MAX_NAME_LENGTH = 20};
     enum Zone { LIBRARY, HAND };
     char         name[MAX_NAME_LENGTH];
@@ -14,17 +16,62 @@ struct Card {
     PlayerHandle player;
 };
 
-struct CardHandle : public Entity {
+class CardHandle : public Entity {
+    friend class Context;
+private:
+    auto card() { return component<Card>(); }
+    auto card() const { return component<const Card>(); }
+    
+public:
     CardHandle(Entity e = {})
     : Entity{e}
     {}
-    auto operator->() { return component<Card>(); }
-    const auto operator->() const { return component<const Card>(); } 
-        
+    
     bool operator==(const char *rhs) const
-    { return 0 == std::strcmp(rhs,(*this)->name); }
-};
+    { return 0 == std::strcmp(rhs,card()->name); }
+    
+    void setZone(Card::Zone zone) {
+        card()->zone = zone;
+    }
 
+    Card::Zone getZone() const {
+        return card()->zone;
+    }
+
+    void setName(const char *name) {
+        strncpy(card()->name, name, Card::MAX_NAME_LENGTH);
+    }
+
+    const char *getName() const {
+        return card()->name;
+    }
+    
+    void setPlayer(PlayerHandle player) {
+        card()->player = player;
+    }
+
+    PlayerHandle getPlayer() const {
+        return card()->player;
+    }
+
+    void moveToHand() {
+        card()->zone = Card::HAND;
+    }
+
+    void moveToLibrary() {
+        card()->zone = Card::LIBRARY;
+    }
+    
+    bool isInHand() {
+        return card()->zone == Card::HAND;
+    }
+
+    bool isInLibrary() const {
+        return card()->zone == Card::LIBRARY;
+    }
+    
+};
+    
 using CardVector = const std::vector<CardHandle>;
 using MutableCardVector = std::vector<CardHandle>;
     

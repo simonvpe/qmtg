@@ -19,7 +19,7 @@ namespace MTG {
     public:
 
         Context(pRandomGenerator random) : m_random{std::move(random)} {
-            
+            systems.add<PregameSystem>();
         }
 
         Context() : Context(std::make_unique<RandomGenerator>()) {}
@@ -44,11 +44,11 @@ namespace MTG {
         }        
 
         auto makeCard(PlayerHandle player, std::string name) {
-            auto entity = CardHandle{entities.create()};
-            auto card   = entity.assign<Card>();
-            card->player = player;
-            std::strncpy(card->name, name.c_str(), Card::MAX_NAME_LENGTH);
-            return entity;
+            auto card = CardHandle{entities.create()};
+            card.assign<Card>();
+            card.setPlayer(player);
+            card.setName(name.c_str());
+            return card;
         }
 
         bool isConnected(PlayerHandle player) {
@@ -68,11 +68,10 @@ namespace MTG {
             
             for(auto i = 0 ; i < mcards.size() ; ++i) {
                 auto card = makeCard(player,mcards[i]);
-                auto cardQuery = CardQuery{card};
-                auto zone = (i < player.getStartingHandSize())
-                    ? Card::HAND
-                    : Card::LIBRARY;
-                cardQuery.setZone(zone);
+                if(i < player.getStartingHandSize())
+                    card.moveToHand();
+                else
+                    card.moveToLibrary();
             }
         }
 
@@ -80,7 +79,7 @@ namespace MTG {
             MutableCardVector cards;
             cards.reserve(60);
             eachCard(player, [&](CardHandle card) {
-                if(CardQuery{card}.isInLibrary()) cards.push_back(card);
+                if(card.isInLibrary()) cards.push_back(card);
             });
             return (CardVector)cards;
         }
@@ -89,7 +88,7 @@ namespace MTG {
             MutableCardVector cards;
             cards.reserve(7);
             eachCard(player,[&](CardHandle card) {
-                if(CardQuery{card}.isInHand()) {
+                if(card.isInHand()) {
                     cards.push_back(card);
                 }
             });
@@ -118,7 +117,9 @@ namespace MTG {
         template<typename TFunc>
         void eachCard(PlayerHandle player, TFunc&& func) {
             entities.each<Card>([&](CardHandle cardHandle, auto&) {
-                if(cardHandle->player == player) func(cardHandle);
+                if(cardHandle.getPlayer() == player) {
+                    func(cardHandle);
+                }
             });
         }
         

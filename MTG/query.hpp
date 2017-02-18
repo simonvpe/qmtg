@@ -26,27 +26,4 @@ private:
     GameHandle game;
 };
 
-class CardQuery {
-public:
-    CardQuery(CardHandle handle) : card{handle} {}
-    
-    void setZone(Card::Zone zone) {
-        card->zone = zone;
-    }
-
-    Card::Zone getZone() const {
-        return card->zone;
-    }
-
-    bool isInHand() {
-        return card->zone == Card::HAND;
-    }
-
-    bool isInLibrary() const {
-        return card->zone == Card::LIBRARY;
-    }
-private:
-    CardHandle card;
-};
-    
 }

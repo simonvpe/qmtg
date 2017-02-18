@@ -5,7 +5,7 @@
 namespace m = MTG;
 
 bool operator==(const m::CardHandle& lhs, const std::string& rhs) {
-    return lhs->name == rhs;
+    return lhs.getName() == rhs;
 }
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -50,7 +50,6 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
                 ctx.setDeck(player,deck);
                 player.setReady();
             }
-            game.setStarted();
             ctx.advance();
             
             THEN("each players decks have been shuffled and become "

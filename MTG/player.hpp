@@ -9,6 +9,7 @@ struct Socket {
 };
 
 class Player {
+    friend class PlayerHandle;
 private:
     enum Flags { ACTIVE = 0, READY = 1, MULLIGAN = 2 };
     GameHandle game;
@@ -16,7 +17,6 @@ private:
     bitset<8>  flags;
     int        life;
     int        startingHandSize;
-    friend class PlayerHandle;
 };
 
 class PlayerHandle : public Entity {
