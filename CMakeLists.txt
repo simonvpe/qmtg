@@ -43,6 +43,7 @@ endif()
 add_executable(testrunner
   test/testrunner.cpp
   test/startgame.cpp
+  test/player.cpp
   )
 set(THREADS_PREFER_PTHREAD_FLAG OFF)
 SET_TARGET_PROPERTIES(testrunner PROPERTIES COMPILE_FLAGS "-Wall")
