@@ -19,7 +19,7 @@ public:
     template<typename TFunc>
     void eachPlayer(EntityManager& entities, TFunc&& func) {
         entities.each<Player>([&](PlayerHandle playerHandle, auto&) {
-            if(playerHandle->game == game) func(playerHandle);
+            if(playerHandle.getGame() == game) func(playerHandle);
         });
     }
 private:
@@ -47,49 +47,6 @@ public:
     }
 private:
     CardHandle card;
-};
-
-class PlayerQuery {
-public:
-    PlayerQuery(PlayerHandle handle) : player{handle} {}
-    
-    inline bool isActive() const {
-        return player->flags[Player::ACTIVE];
-    }
-
-    inline int getStartingHandSize() const {
-        return player->startingHandSize;
-    }
-
-    inline int getLife() const {
-        return player->life;
-    }
-
-    inline void setActive(bool value = true) {
-        player->flags[Player::ACTIVE] = value;
-    }
-
-    inline bool isReady() const {
-        return player->flags[Player::READY];
-    }
-        
-    inline void setReady(bool value = true) {
-        player->flags[Player::READY] = value;
-    }
-
-    inline void setGame(GameHandle value) {
-        player->game = value;
-    }
-
-    inline void setLife(int value) {
-        player->life = value;
-    }
-
-    inline void setStartingHandSize(int value) {
-        player->startingHandSize = value;
-    }
-private:
-    PlayerHandle player;
 };
     
 }

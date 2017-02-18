@@ -17,7 +17,7 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
         auto player2 = ctx.makePlayer(gameHandle);
         auto game = m::GameQuery{gameHandle};
         auto deck = std::vector<const char*>(60, "dummy");
-        
+
         WHEN("not all players are connected") {
             ctx.connect(player1);
             ctx.advance();
@@ -37,7 +37,7 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
         WHEN("all players are connected and ready") {
             for(auto player : { player1, player2 }) {
                 ctx.connect(player);
-                m::PlayerQuery{player}.setReady();
+                player.setReady();
             }
             ctx.advance();
             THEN("the game should start") {
@@ -48,7 +48,7 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
             for(auto player : { player1, player2 }) {
                 ctx.connect(player);
                 ctx.setDeck(player,deck);
-                m::PlayerQuery{player}.setReady();
+                player.setReady();
             }
             game.setStarted();
             ctx.advance();
@@ -64,14 +64,14 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
                      "have modified their staring hand size") {
                 for(auto player : { player1, player2 }) {
                     auto hand = ctx.getHand(player);
-                    CHECK( 7 == m::PlayerQuery{player}.getStartingHandSize() );
+                    CHECK( 7 == player.getStartingHandSize() );
                     CHECK( 7 == hand.size() );
                 }
             }
             THEN("each player begins the game with a starting life total "
                      "of 20.") {
                 for(auto player : { player1, player2 }) {
-                    CHECK( 20 == m::PlayerQuery{player}.getLife() );
+                    CHECK( 20 == player.getLife() );
                 }
             }
         }
@@ -92,7 +92,7 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
             for(auto player : {player1,player2}) {
                 ctx.connect(player);
                 ctx.setDeck(player, deck);
-                m::PlayerQuery{player}.setReady();
+                player.setReady();
             }
             //ctx.setMulligan(player1, true);
             //ctx.setMulligan(player2, false);
