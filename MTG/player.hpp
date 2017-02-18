@@ -13,7 +13,7 @@ private:
     enum Flags { ACTIVE = 0, READY = 1, MULLIGAN = 2 };
     GameHandle game;
     Entity     other;
-    bitset<2>  flags;
+    bitset<8>  flags;
     int        life;
     int        startingHandSize;
     friend class PlayerHandle;
@@ -30,46 +30,53 @@ public:
     : Entity{e}
     {}    
     
+    inline void setActive(bool value = true) {
+        player()->flags[Player::ACTIVE] = value;
+    }
+
     inline bool isActive() const {
         return player()->flags[Player::ACTIVE];
+    }
+
+    inline void setStartingHandSize(int value) {
+        player()->startingHandSize = value;
     }
 
     inline int getStartingHandSize() const {
         return player()->startingHandSize;
     }
 
+    inline void setLife(int value) {
+        player()->life = value;
+    }
+
     inline int getLife() const {
         return player()->life;
-    }
-
-    inline auto getGame() const {
-        return player()->game;
-    }
-
-    inline void setActive(bool value = true) {
-        player()->flags[Player::ACTIVE] = value;
-    }
-
-    inline bool isReady() const {
-        return player()->flags[Player::READY];
-    }
-        
-    inline void setReady(bool value = true) {
-        player()->flags[Player::READY] = value;
     }
 
     inline void setGame(GameHandle value) {
         player()->game = value;
     }
 
-    inline void setLife(int value) {
-        player()->life = value;
+    inline auto getGame() const {
+        return player()->game;
     }
 
-    inline void setStartingHandSize(int value) {
-        player()->startingHandSize = value;
+    inline void setMulligan(bool value = true) {
+        player()->flags[Player::MULLIGAN] = value;
+    }
+
+    inline auto wantsMulligan() const {
+        return player()->flags[Player::MULLIGAN];
+    }
+
+    inline void setReady(bool value = true) {
+        player()->flags[Player::READY] = value;
     }
     
+    inline bool isReady() const {
+        return player()->flags[Player::READY];
+    }
 };
 using PlayerVector = const std::vector<PlayerHandle>;
 using MutablePlayerVector = std::vector<PlayerHandle>;

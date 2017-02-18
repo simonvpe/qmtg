@@ -96,7 +96,34 @@ SCENARIO("PlayerHandle","[Player][PlayerHandle][unit]") {
                 CHECK( g == game );
             }
         }
-                                             
+
+        WHEN("setting mulligan to true") {
+            player.setMulligan(true);
+            THEN("wantsMulligan() should return true") {
+                CHECK( player.wantsMulligan() );
+            }
+        }
+
+        WHEN("setting mulligan to false") {
+            player.setMulligan(false);
+            THEN("wantsMulligan() should return false") {
+                CHECK( !player.wantsMulligan() );
+            }
+        }
+
+        WHEN("setting mulligan without argument") {
+            player.setMulligan();
+            THEN("wantsMulligan() should return true") {
+                CHECK( player.wantsMulligan() );
+            }
+        }
+
+        WHEN("calling wantsMulligan() on a fresh object") {
+            auto wantsMulligan = player.wantsMulligan();
+            THEN("it should return false by default") {
+                CHECK( !wantsMulligan );
+            }
+        }
                              
     }
 }
