@@ -81,7 +81,7 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
         WHEN("the game have just started (all players connected and ready)") {
             for(auto player : { player1, player2 }) {
                 ctx.connect(player);
-                ctx.setDeck(player,deck);
+                ctx.createDeck(player,deck);
                 player.setReady();
             }
             ctx.advance();
@@ -93,12 +93,18 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
                     CHECK( 53 == lib.size() );
                 }
             }
-            THEN("each player has a starting hand size of 7 if no effects "
+            THEN("each player has a starting hand of 7 cards if no effects "
                      "have modified their staring hand size") {
                 for(auto player : { player1, player2 }) {
                     auto hand = ctx.getHand(player);
-                    CHECK( 7 == player.getStartingHandSize() );
                     CHECK( 7 == hand.size() );
+                }
+                AND_THEN("the players starting hand sizes should have decreased "
+                         "to 6") {
+                    for(auto player : {player1, player2 }) {
+                        CHECK( 6 == player.getStartingHandSize() );
+                    }
+                    
                 }
             }
             THEN("each player begins the game with a starting life total "
@@ -110,29 +116,28 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
         }
         WHEN("setting a players deck several times") {
             auto deck1 = std::vector<const char*>(60,"one");
-            auto deck2 = std::vector<const char*>(60,"two");
-            for(auto deck : {deck1, deck2}) {
-                ctx.setDeck(player1,deck);
-            }
-            THEN("the old cards should have been destroyed") {
-                CHECK( 53 == ctx.getLibrary(player1).size() );
-                CHECK( 7 ==  ctx.getHand(player1).size() );
-                CHECK( *ctx.getLibrary(player1).begin() == *deck2.begin() );
-                CHECK( *ctx.getHand(player1).begin() == *deck2.begin() );
+            ctx.createDeck(player1, deck1);
+            THEN("should fail with an exception") {
+                auto deck2 = std::vector<const char*>(60,"two");
+                CHECK_THROWS( ctx.createDeck(player1, deck2) );
             }
         }
         WHEN("a player chooses to mulligan") {
             for(auto player : {player1,player2}) {
                 ctx.connect(player);
-                ctx.setDeck(player, deck);
+                ctx.createDeck(player, deck);
                 player.setReady();
             }
             ctx.advance();
-            //ctx.setMulligan(player1, true);
-            //ctx.setMulligan(player2, false);
+            player1.setMulligan();
+            ctx.advance();
             THEN("players should be dealt one less card than his or her "
                  "current hand size") {
-                //CHECK( 6 == ctx.hand(player1).size() );
+                CHECK( 6 == ctx.getHand(player1).size() );
+                AND_THEN("the players starting hand size should have decreased "
+                         "to 5") {
+                    CHECK( 5 == player1.getStartingHandSize() );
+                }
             }
         }
     }

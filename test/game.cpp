@@ -36,5 +36,11 @@ SCENARIO("GameHandle", "[Game][GameHandle][unit]") {
                 CHECK( game.isStarted() );
             }
         }
+
+        WHEN("starting the game") {
+            THEN("the game should be in the pregame phase") {
+                CHECK( game.isInPregamePhase() );
+            }
+        }
     }
 }

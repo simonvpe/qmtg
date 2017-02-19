@@ -60,8 +60,10 @@ namespace MTG {
             player.assign<Socket>();
         }
 
-        void setDeck(PlayerHandle player, gsl::span<const char*> cards) {
-            eachCard(player,[](auto card) { card.destroy(); });
+        void createDeck(PlayerHandle player, gsl::span<const char*> cards) {
+            eachCard(player,[](auto card) {
+                throw std::overflow_error("Player already have deck assigned");
+            });
 
             std::vector<const char*> mcards(cards.begin(), cards.end());
             m_random->shuffle(mcards);
@@ -73,6 +75,8 @@ namespace MTG {
                 else
                     card.moveToLibrary();
             }
+
+            player.setStartingHandSize(player.getStartingHandSize() - 1);
         }
 
         CardVector getLibrary(PlayerHandle player) {

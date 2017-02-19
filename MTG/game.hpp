@@ -10,7 +10,9 @@ class Game {
     friend class GameHandle;
 private:
     enum Flags { STARTED = 0 };
+    enum Phase { PREGAME };
     bitset<1> flags;
+    Phase     phase;
 };
 
 class GameHandle : public Entity {
@@ -30,6 +32,14 @@ public:
     
     inline bool isStarted() {
         return game()->flags[Game::STARTED];
+    }
+
+    inline void setPregamePhase() {
+        game()->phase = Game::Phase::PREGAME;
+    }
+    
+    inline bool isInPregamePhase() const {
+        return game()->phase == Game::Phase::PREGAME;
     }
 };
 
