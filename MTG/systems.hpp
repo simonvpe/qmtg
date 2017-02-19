@@ -19,6 +19,9 @@ class PregameSystem : public System<PregameSystem> {
                     start = start && player.isReady();
                 });
                 GameQuery{game}.setStarted(start);
+                es.each<Player>([&](PlayerHandle player, auto&) {
+                    player.setReady(false);
+                });
             }
         });
         

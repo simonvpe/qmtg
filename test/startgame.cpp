@@ -41,7 +41,11 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
             }
             ctx.advance();
             THEN("the game should start") {
-                CHECK( true == game.isStarted() );
+                CHECK( game.isStarted() );
+                AND_THEN("the reset field of the players should reset to false") {
+                    CHECK( !player1.isReady() );
+                    CHECK( !player2.isReady() );
+                }
             }
         }
         WHEN("the game have just started (all players connected and ready)") {
@@ -93,6 +97,7 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
                 ctx.setDeck(player, deck);
                 player.setReady();
             }
+            ctx.advance();
             //ctx.setMulligan(player1, true);
             //ctx.setMulligan(player2, false);
             THEN("players should be dealt one less card than his or her "
