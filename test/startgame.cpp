@@ -137,6 +137,9 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
                 AND_THEN("the players starting hand size should have decreased "
                          "to 5") {
                     CHECK( 5 == player1.getStartingHandSize() );
+                    AND_THEN("the player should not be marked for mulligan anymore") {
+                        CHECK( !player1.wantsMulligan() );
+                    }
                 }
             }
         }

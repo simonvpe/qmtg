@@ -101,6 +101,7 @@ public:
                     moveHandToLibrary(pQuery);
                     draw(pQuery, player.getStartingHandSize());
                     player.setStartingHandSize(player.getStartingHandSize() - 1);
+                    player.setMulligan(false);
                 }
             });
         }
