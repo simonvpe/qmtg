@@ -19,7 +19,7 @@ namespace MTG {
     public:
 
         Context(pRandomGenerator random) : m_random{std::move(random)} {
-            systems.add<PregameSystem>();
+            systems.add<GameSystem>();
         }
 
         Context() : Context(std::make_unique<RandomGenerator>()) {}

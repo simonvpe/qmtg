@@ -9,7 +9,7 @@ using namespace entityx;
 class Card {
     friend class CardHandle;
 private:
-    enum { MAX_NAME_LENGTH = 20};
+    enum      { MAX_NAME_LENGTH = 20};
     enum Zone { UNDEFINED, LIBRARY, HAND };
     char         name[MAX_NAME_LENGTH];
     Zone         zone;

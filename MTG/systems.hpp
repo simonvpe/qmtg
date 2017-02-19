@@ -6,7 +6,7 @@
 namespace MTG {
 using namespace entityx;
 
-class PregameSystem : public System<PregameSystem> {
+class GameSystem : public System<GameSystem> {
 
     void update(EntityManager &es, EventManager &events, TimeDelta dt) override {
         
