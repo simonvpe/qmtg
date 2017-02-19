@@ -10,7 +10,7 @@ class Card {
     friend class CardHandle;
 private:
     enum { MAX_NAME_LENGTH = 20};
-    enum Zone { LIBRARY, HAND };
+    enum Zone { UNDEFINED, LIBRARY, HAND };
     char         name[MAX_NAME_LENGTH];
     Zone         zone;
     PlayerHandle player;
@@ -29,14 +29,6 @@ public:
     
     bool operator==(const char *rhs) const
     { return 0 == std::strcmp(rhs,card()->name); }
-    
-    void setZone(Card::Zone zone) {
-        card()->zone = zone;
-    }
-
-    Card::Zone getZone() const {
-        return card()->zone;
-    }
 
     void setName(const char *name) {
         strncpy(card()->name, name, Card::MAX_NAME_LENGTH);
@@ -68,6 +60,10 @@ public:
 
     bool isInLibrary() const {
         return card()->zone == Card::LIBRARY;
+    }
+
+    bool zoneIsUndefined() const {
+        return card()->zone == Card::UNDEFINED;
     }
     
 };
