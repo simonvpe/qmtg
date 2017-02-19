@@ -1,6 +1,5 @@
 #pragma once
 #include <entityx/entityx.h>
-#include <query.hpp>
 #include <game.hpp>
 #include <player.hpp>
 
@@ -13,12 +12,12 @@ class PregameSystem : public System<PregameSystem> {
         
         // When all players are ready, start the game
         es.each<Game>([&](GameHandle game, auto&) {
-            if(!GameQuery{game}.isStarted()) {
+            if(!game.isStarted()) {
                 auto start = true;
                 es.each<Player>([&](PlayerHandle player, auto&) {
                     start = start && player.isReady();
                 });
-                GameQuery{game}.setStarted(start);
+                game.setStarted(start);
                 es.each<Player>([&](PlayerHandle player, auto&) {
                     player.setReady(false);
                 });

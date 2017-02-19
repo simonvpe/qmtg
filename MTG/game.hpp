@@ -6,15 +6,31 @@ namespace MTG {
 using namespace entityx;
 using namespace std;
     
-struct Game {
+class Game {
+    friend class GameHandle;
+private:
     enum Flags { STARTED = 0 };
     bitset<1> flags;
 };
 
-struct GameHandle : public Entity {
-    GameHandle(Entity e = {}) : Entity{e} {}
-    auto operator->() { return component<Game>(); }
-    const auto operator->() const { return component<const Game>(); }
+class GameHandle : public Entity {
+    friend class Context;
+private:
+    auto game() { return component<Game>(); }
+    auto game() const { return component<const Game>(); }
+
+public:
+    GameHandle(Entity e = {})
+    : Entity{e}
+    {}
+
+    inline void setStarted(bool value = true) {
+        game()->flags[Game::STARTED] = value;
+    }
+    
+    inline bool isStarted() {
+        return game()->flags[Game::STARTED];
+    }
 };
 
 }

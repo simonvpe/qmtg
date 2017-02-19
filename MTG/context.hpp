@@ -98,7 +98,7 @@ namespace MTG {
         auto getPlayers(GameHandle game) {
             MutablePlayerVector players;
             players.reserve(2);
-            GameQuery{game}.eachPlayer(entities, [&](auto playerHandle) {
+            eachPlayer(entities, game, [&](auto playerHandle) {
                 players.push_back(playerHandle);
             });
             return (PlayerVector)players;            
@@ -113,6 +113,12 @@ namespace MTG {
         //     player::setActive(*players.begin(), true);
         // }
         ////////////////////////////////////////////////////////////////////////
+        template<typename TFunc>
+        void eachPlayer(EntityManager& entities, GameHandle game, TFunc&& func) {
+            entities.each<Player>([&](PlayerHandle player, auto&) {
+                if(player.getGame() == game) func(player);
+            });
+        }
 
         template<typename TFunc>
         void eachCard(PlayerHandle player, TFunc&& func) {

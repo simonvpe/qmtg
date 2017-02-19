@@ -12,11 +12,10 @@ bool operator==(const m::CardHandle& lhs, const std::string& rhs) {
 SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
     GIVEN("a newly started match of two players, each with a deck of cards") {
         m::Context ctx;
-        auto gameHandle = ctx.makeGame();
-        auto player1 = ctx.makePlayer(gameHandle);
-        auto player2 = ctx.makePlayer(gameHandle);
-        auto game = m::GameQuery{gameHandle};
-        auto deck = std::vector<const char*>(60, "dummy");
+        auto game    = ctx.makeGame();
+        auto player1 = ctx.makePlayer(game);
+        auto player2 = ctx.makePlayer(game);
+        auto deck    = std::vector<const char*>(60, "dummy");
 
         WHEN("not all players are connected") {
             ctx.connect(player1);
