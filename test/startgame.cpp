@@ -38,12 +38,43 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
                 ctx.connect(player);
                 player.setReady();
             }
-            ctx.advance();
             THEN("the game should start") {
+                ctx.advance();
                 CHECK( game.isStarted() );
                 AND_THEN("the reset field of the players should reset to false") {
                     CHECK( !player1.isReady() );
                     CHECK( !player2.isReady() );
+                }
+            }
+            WHEN("there are several games running") {
+                auto game2 = ctx.makeGame();
+                auto game3 = ctx.makeGame();
+                AND_WHEN("the other games are about to start") {
+                    for(auto g : { game2, game3 }) {
+                        for(auto p : { ctx.makePlayer(g), ctx.makePlayer(g) }) {
+                            ctx.connect(p);
+                            p.setReady();
+                        }
+                    }
+
+                    ctx.advance();
+                    THEN("the other games should also be able to start") {
+                        CHECK( game.isStarted() );
+                        CHECK( game2.isStarted() );
+                        CHECK( game3.isStarted() );
+                    }
+                }
+                AND_WHEN("the other games are not about to start") {
+                    for(auto g : { game2, game3 }) {
+                        ctx.makePlayer(g);
+                        ctx.makePlayer(g);
+                    }
+                    ctx.advance();
+                    THEN("the other games should not start") {
+                        CHECK( game.isStarted() );
+                        CHECK( !game2.isStarted() );
+                        CHECK( !game3.isStarted() );
+                    }
                 }
             }
         }
