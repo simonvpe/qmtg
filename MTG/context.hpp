@@ -14,6 +14,9 @@
 
 namespace MTG {
     namespace ex = entityx;
+
+    template<typename T>
+    using span = gsl::span<T>;
     
     class Context : public ex::EntityX {
     public:
@@ -60,8 +63,9 @@ namespace MTG {
             player.assign<Socket>();
         }
 
-        void createDeck(PlayerHandle player, gsl::span<const char*> cards) {
-            eachCard(player,[](auto card) {
+        void createDeck(PlayerHandle player, span<const char*> cards) {
+            PlayerQuery pQuery{entities, player};
+            pQuery.eachCard([](auto card) {
                 throw std::overflow_error("Player already have deck assigned");
             });
 
@@ -82,7 +86,8 @@ namespace MTG {
         CardVector getLibrary(PlayerHandle player) {
             MutableCardVector cards;
             cards.reserve(60);
-            eachCard(player, [&](CardHandle card) {
+            PlayerQuery pQuery{entities, player};
+            pQuery.eachCard([&](CardHandle card) {
                 if(card.isInLibrary()) cards.push_back(card);
             });
             return (CardVector)cards;
@@ -91,7 +96,8 @@ namespace MTG {
         CardVector getHand(PlayerHandle player) {
             MutableCardVector cards;
             cards.reserve(7);
-            eachCard(player,[&](CardHandle card) {
+            PlayerQuery pQuery{entities, player};
+            pQuery.eachCard([&](CardHandle card) {
                 if(card.isInHand()) {
                     cards.push_back(card);
                 }
@@ -102,35 +108,11 @@ namespace MTG {
         auto getPlayers(GameHandle game) {
             MutablePlayerVector players;
             players.reserve(2);
-            eachPlayer(entities, game, [&](auto playerHandle) {
+            GameQuery gQuery{entities, game};
+            gQuery.eachPlayer([&](auto playerHandle) {
                 players.push_back(playerHandle);
             });
             return (PlayerVector)players;            
-        }
-        
-    protected:
-
-        ////////////////////////////////////////////////////////////////////////
-        // void randomizeActivePlayer(GameHandle game) {
-        //     auto players = getPlayers(game);
-        //     m_random->shuffle(players);
-        //     player::setActive(*players.begin(), true);
-        // }
-        ////////////////////////////////////////////////////////////////////////
-        template<typename TFunc>
-        void eachPlayer(EntityManager& entities, GameHandle game, TFunc&& func) {
-            entities.each<Player>([&](PlayerHandle player, auto&) {
-                if(player.getGame() == game) func(player);
-            });
-        }
-
-        template<typename TFunc>
-        void eachCard(PlayerHandle player, TFunc&& func) {
-            entities.each<Card>([&](CardHandle cardHandle, auto&) {
-                if(cardHandle.getPlayer() == player) {
-                    func(cardHandle);
-                }
-            });
         }
         
     private:
