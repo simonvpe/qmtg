@@ -132,7 +132,7 @@ class GameSystem : public System<GameSystem> {
         PregameSubsystem pregame{es};
         
         es.each<Game>([&](GameHandle game, auto&) {
-                pregame.update(game);
+            pregame.update(game);
         });
         
     };
