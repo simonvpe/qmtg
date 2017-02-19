@@ -34,7 +34,7 @@ namespace MTG {
             return game;
         }
         
-        const auto makePlayer(GameHandle& game) {
+        const auto makePlayer(GameHandle game) {
             auto player = PlayerHandle{entities.create()};
             player.assign<Player>();
             player.setGame(game);
