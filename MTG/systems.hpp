@@ -42,17 +42,22 @@ public:
         else if(game.isInPregamePhase()) {
             gQuery.eachPlayer([&](PlayerHandle player) {
                 if(player.wantsMulligan()) {
-                    PlayerQuery pQuery{m_entities, player};
-                    moveHandToLibrary(pQuery);
-                    draw(pQuery, player.getStartingHandSize());
-                    player.setStartingHandSize(player.getStartingHandSize() - 1);
-                    player.setMulligan(false);
+                    mulligan(player);
                 }
             });
         }
     }
 
 protected:
+    void mulligan(PlayerHandle player) {
+        PlayerQuery pQuery{m_entities, player};
+        moveHandToLibrary(pQuery);
+        draw(pQuery, player.getStartingHandSize());
+        player.setStartingHandSize(player.getStartingHandSize() - 1);
+        player.setMulligan(false);
+        resetPlayersReady({m_entities,player.getGame()});
+    }
+    
     bool allPlayersReady(GameQuery gQuery) const {
         auto allReady = true;
         gQuery.eachPlayer([&](PlayerHandle player) {

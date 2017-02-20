@@ -9,8 +9,8 @@ bool operator==(const m::CardHandle& lhs, const std::string& rhs) {
 }
 ////////////////////////////////////////////////////////////////////////////////
 
-SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
-    GIVEN("a newly started match of two players, each with a deck of cards") {
+SCENARIO("103. Starting the Game","[103.1][103.2][103.3][103.4]") {
+    GIVEN("a game with two not-yet-ready players, and a list of dummy cards") {
         m::Context ctx;
         auto game    = ctx.makeGame();
         auto player1 = ctx.makePlayer(game);
@@ -31,7 +31,7 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
             THEN("the game should start") {
                 ctx.advance();
                 CHECK( game.isStarted() );
-                AND_THEN("the reset field of the players should reset to false") {
+                AND_THEN("the ready field of the players should reset to false") {
                     CHECK( !player1.isReady() );
                     CHECK( !player2.isReady() );
                 }
@@ -109,25 +109,48 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
                 CHECK_THROWS( ctx.createDeck(player1, deck2) );
             }
         }
-        WHEN("a player chooses to mulligan") {
+        WHEN("the game has started") {
             for(auto player : {player1,player2}) {
                 ctx.createDeck(player, deck);
                 player.setReady();
             }
             ctx.advance();
-            player1.setMulligan();
-            ctx.advance();
-            THEN("players should be dealt one less card than his or her "
-                 "current hand size") {
-                CHECK( 6 == ctx.getHand(player1).size() );
-                AND_THEN("the players starting hand size should have decreased "
-                         "to 5") {
-                    CHECK( 5 == player1.getStartingHandSize() );
-                    AND_THEN("the player should not be marked for mulligan anymore") {
+            AND_WHEN("a player is marked for mulligan and both players are marked ready") {
+                player1.setMulligan();
+                for(auto player : {player1,player2}) player.setReady();
+                ctx.advance();
+                THEN("the mulligan player should be dealt one less card than his or her "
+                     "current hand size") {
+                    CHECK( 6 == ctx.getHand(player1).size() );
+                    AND_THEN("the mulligan player should not be marked for mulligan anymore") {
                         CHECK( !player1.wantsMulligan() );
+                        AND_THEN("none of the players should be marked ready") {
+                            CHECK( !player1.isReady() );
+                            CHECK( !player2.isReady() );
+                        }
                     }
                 }
             }
+            AND_WHEN("both players are marked for mulligan and both players are marked ready") {
+                for(auto player : {player1,player2}) {
+                    player.setReady();
+                    player.setMulligan();
+                }
+                ctx.advance();
+                THEN("both players should be dealt one less card than his or her current hand size") {
+                    for(auto player : {player1,player2})
+                        CHECK( 6 == ctx.getHand(player).size() );
+                    AND_THEN("both players should not be marked for mulligan anymore") {
+                        for(auto player : {player1,player2})
+                            CHECK( !player.wantsMulligan() );
+                        AND_THEN("none of the players should be marked ready") {
+                            for(auto player : {player1,player2})
+                                CHECK( !player.isReady() );
+                        }
+                    }
+                }
+            }
+            
         }
     }
 }
