@@ -5,9 +5,6 @@
 namespace MTG {
 using namespace entityx;
 
-struct Socket {
-};
-
 class Player {
     friend class PlayerHandle;
 private:
@@ -77,6 +74,7 @@ public:
     inline bool isReady() const {
         return player()->flags[Player::READY];
     }
+
 };
 using PlayerVector = const std::vector<PlayerHandle>;
 using MutablePlayerVector = std::vector<PlayerHandle>;

@@ -54,15 +54,6 @@ namespace MTG {
             return card;
         }
 
-        bool isConnected(PlayerHandle player) {
-            return player.component<Socket>().valid();
-        }
-
-        void connect(PlayerHandle player) {
-            if(isConnected(player)) return;
-            player.assign<Socket>();
-        }
-
         void createDeck(PlayerHandle player, span<const char*> cards) {
             PlayerQuery pQuery{entities, player};
             pQuery.eachCard([](auto card) {

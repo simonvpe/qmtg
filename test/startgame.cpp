@@ -17,25 +17,15 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
         auto player2 = ctx.makePlayer(game);
         auto deck    = std::vector<const char*>(60, "dummy");
 
-        WHEN("not all players are connected") {
-            ctx.connect(player1);
-            ctx.advance();
-            THEN("the game should not to start") {
-                CHECK( false == game.isStarted() );
-            }
-        }
-        WHEN("all players are connected but not ready") {
-            for(auto player : { player1, player2 }) {
-                ctx.connect(player);
-            }
+        WHEN("all players are not ready") {
+            player1.setReady();
             ctx.advance();
             THEN("the game should not start") {
                 CHECK( false == game.isStarted() );
             }
         }
-        WHEN("all players are connected and ready") {
+        WHEN("all players are ready") {
             for(auto player : { player1, player2 }) {
-                ctx.connect(player);
                 player.setReady();
             }
             THEN("the game should start") {
@@ -52,13 +42,11 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
                 AND_WHEN("the other games are about to start") {
                     for(auto g : { game2, game3 }) {
                         for(auto p : { ctx.makePlayer(g), ctx.makePlayer(g) }) {
-                            ctx.connect(p);
                             p.setReady();
                         }
                     }
-
                     ctx.advance();
-                    THEN("the other games should also be able to start") {
+                    THEN("all the games should be started") {
                         CHECK( game.isStarted() );
                         CHECK( game2.isStarted() );
                         CHECK( game3.isStarted() );
@@ -78,9 +66,8 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
                 }
             }
         }
-        WHEN("the game have just started (all players connected and ready)") {
+        WHEN("the game have just started") {
             for(auto player : { player1, player2 }) {
-                ctx.connect(player);
                 ctx.createDeck(player,deck);
                 player.setReady();
             }
@@ -124,7 +111,6 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3]") {
         }
         WHEN("a player chooses to mulligan") {
             for(auto player : {player1,player2}) {
-                ctx.connect(player);
                 ctx.createDeck(player, deck);
                 player.setReady();
             }
