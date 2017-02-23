@@ -8,7 +8,7 @@ using namespace entityx;
 class Player {
     friend class PlayerHandle;
 private:
-    enum Flags { ACTIVE = 0, READY = 1, MULLIGAN = 2 };
+    enum Flags { ACTIVE = 0, READY = 1, MULLIGAN = 2, CAN_MULLIGAN = 3 };
     GameHandle game;
     Entity     other;
     bitset<8>  flags;
@@ -63,7 +63,15 @@ public:
         player()->flags[Player::MULLIGAN] = value;
     }
 
-    inline auto wantsMulligan() const {
+    inline void setCanMulligan(bool value = true) {
+        player()->flags[Player::CAN_MULLIGAN] = value;
+    }
+    
+    inline bool getCanMulligan() const {
+        return player()->flags[Player::CAN_MULLIGAN];
+    }
+    
+    inline auto getMulligan() const {
         return player()->flags[Player::MULLIGAN];
     }
 

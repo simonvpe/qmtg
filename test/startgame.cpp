@@ -115,6 +115,10 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3][103.4]") {
                 player.setReady();
             }
             ctx.advance();
+            THEN("both players should be eligable for mulligan") {
+                CHECK( player1.getCanMulligan() );
+                CHECK( player2.getCanMulligan() );
+            }
             AND_WHEN("a player is marked for mulligan and both players are marked ready") {
                 player1.setMulligan();
                 for(auto player : {player1,player2}) player.setReady();
@@ -123,10 +127,15 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3][103.4]") {
                      "current hand size") {
                     CHECK( 6 == ctx.getHand(player1).size() );
                     AND_THEN("the mulligan player should not be marked for mulligan anymore") {
-                        CHECK( !player1.wantsMulligan() );
+                        CHECK( !player1.getMulligan() );
                         AND_THEN("none of the players should be marked ready") {
                             CHECK( !player1.isReady() );
                             CHECK( !player2.isReady() );
+                            AND_WHEN("that player should not be allowed to mulligan again") {
+                                CHECK( !player1.getCanMulligan() );
+                                player1.setMulligan();
+                                CHECK_THROWS( ctx.advance() );
+                            }
                         }
                     }
                 }
@@ -140,9 +149,9 @@ SCENARIO("103. Starting the Game","[103.1][103.2][103.3][103.4]") {
                 THEN("both players should be dealt one less card than his or her current hand size") {
                     for(auto player : {player1,player2})
                         CHECK( 6 == ctx.getHand(player).size() );
-                    AND_THEN("both players should not be marked for mulligan anymore") {
+                    AND_THEN("none of the players should be marked for mulligan anymore") {
                         for(auto player : {player1,player2})
-                            CHECK( !player.wantsMulligan() );
+                            CHECK( !player.getMulligan() );
                         AND_THEN("none of the players should be marked ready") {
                             for(auto player : {player1,player2})
                                 CHECK( !player.isReady() );

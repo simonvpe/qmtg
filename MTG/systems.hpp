@@ -36,12 +36,17 @@ public:
             if(startGame) {
                 resetPlayersReady(gQuery);
                 game.setStarted();
+                gQuery.eachPlayer([](PlayerHandle player) {
+                    player.setCanMulligan();
+                });
             }
         }
         
         else if(game.isInPregamePhase()) {
             gQuery.eachPlayer([&](PlayerHandle player) {
-                if(player.wantsMulligan()) {
+                if(player.getMulligan()) {
+                    if(!player.getCanMulligan())
+                        throw std::logic_error("The player cannot mulligan");
                     mulligan(player);
                 }
             });
@@ -55,6 +60,7 @@ protected:
         draw(pQuery, player.getStartingHandSize());
         player.setStartingHandSize(player.getStartingHandSize() - 1);
         player.setMulligan(false);
+        player.setCanMulligan(false);
         resetPlayersReady({m_entities,player.getGame()});
     }
     

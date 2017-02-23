@@ -99,29 +99,57 @@ SCENARIO("PlayerHandle","[Player][PlayerHandle][unit]") {
 
         WHEN("setting mulligan to true") {
             player.setMulligan(true);
-            THEN("wantsMulligan() should return true") {
-                CHECK( player.wantsMulligan() );
+            THEN("getMulligan() should return true") {
+                CHECK( player.getMulligan() );
             }
         }
 
         WHEN("setting mulligan to false") {
             player.setMulligan(false);
-            THEN("wantsMulligan() should return false") {
-                CHECK( !player.wantsMulligan() );
+            THEN("getMulligan() should return false") {
+                CHECK( !player.getMulligan() );
             }
         }
 
         WHEN("setting mulligan without argument") {
             player.setMulligan();
-            THEN("wantsMulligan() should return true") {
-                CHECK( player.wantsMulligan() );
+            THEN("getMulligan() should return true") {
+                CHECK( player.getMulligan() );
             }
         }
 
-        WHEN("calling wantsMulligan() on a fresh object") {
-            auto wantsMulligan = player.wantsMulligan();
+        WHEN("calling getMulligan() on a fresh object") {
+            auto getMulligan = player.getMulligan();
             THEN("it should return false by default") {
-                CHECK( !wantsMulligan );
+                CHECK( !getMulligan );
+            }
+        }
+
+        WHEN("setting canMulligan to true") {
+            player.setCanMulligan(true);
+            THEN("getCanMulligan() should return true") {
+                CHECK( player.getCanMulligan() );
+            }
+        }
+
+        WHEN("setting canMulligan to false") {
+            player.setCanMulligan(false);
+            THEN("getCanMulligan() should return false") {
+                CHECK( !player.getCanMulligan() );
+            }
+        }
+
+        WHEN("calling setCanMulligan() without argument") {
+            player.setCanMulligan();
+            THEN("getCanMulligan() should return true") {
+                CHECK( player.getCanMulligan() );
+            }
+        }
+
+        WHEN("calling getCanMulligan() on a fresh object") {
+            auto canMulligan = player.getCanMulligan();
+            THEN("it should return false by default") {
+                CHECK( !canMulligan );
             }
         }
                              
